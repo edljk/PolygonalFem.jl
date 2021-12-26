@@ -33,15 +33,18 @@ function vem(mesh_filename::String =
     # impose an ordering on the linear polynomials
     linear_polynomials = [[0,0], [1,0], [0,1]] 
     mod_wrap(x, a) = mod(x - 1, a) + 1 # a utility function for wrapping around a vector
+    areatot = 0.
     for el_id = 1:length(cellsb)
         vert_ids = cellsb[el_id]   # IDs of the vertices of this element
         verts = pv[vert_ids, :]    # coordinates of the vertices of this element
         n_sides = length(vert_ids) # start computing the geometric information
         area_components = verts[:, 1] .* [verts[2:end, 2]..., verts[1, 2]] .- 
                          [verts[2:end, 1]..., verts[2, 1]] .* verts[:, 2]
-                         println(111)
         area = 0.5 * abs(sum(area_components))
-        centroid = sum(verts .+ vcat(verts[2:end, :], verts[1, :]'), dims = 1) .* repeat(area_components, 1, 2) / (6 * area)
+        areatot += area
+        centroid = sum((verts .+ vcat(verts[2:end, :], verts[1, :]')) .* 
+                        repeat(area_components, 1, 2), dims = 1) / 
+                    (6 * area)
         diameter = 0 # compute the diameter by looking at every pair of vertices
         for i = 1:(n_sides-1)
             for j = (i + 1):n_sides
@@ -63,7 +66,7 @@ function vem(mesh_filename::String =
                 poly_degree = linear_polynomials[poly_id]
                 # gradient of a linear polynomial is constant
                 monomial_grad = poly_degree / diameter 
-                D[vertex_id, poly_id] = dot(vert .- centroid, poly_degree) / diameter
+                D[vertex_id, poly_id] = dot(vert .- centroid[:], poly_degree) / diameter
                 B[poly_id, vertex_id] = 0.5 * dot(monomial_grad, vertex_normal)
             end
         end
@@ -76,17 +79,25 @@ function vem(mesh_filename::String =
         local_stiffness = projector' * G * projector + stabilising_term
         # copy local to global
         K[vert_ids, vert_ids] .= K[vert_ids, vert_ids] .+ local_stiffness 
-        F[vert_ids] .= F[vert_ids] + rhs(centroid) * area / n_sides
+        F[vert_ids] .= F[vert_ids] .+ rhs(centroid) * area / n_sides
     end
     boundary_vals = boundary_condition(pv[meshboundary, :])
     # vertices which aren’t on the boundary
-    internal_dofs =  ismember(1:n_dofs, meshboundary) 
+    internal_dofs =  setdiff(1:n_dofs, meshboundary) 
     # apply the boundary condition
-    F = F - K[:, mesh.boundary] * boundary_vals 
+    F -= K[:, meshboundary] * boundary_vals 
     # solve
-    u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
-    u[mesh.boundary] = boundary_vals # set the boundary values
+    qrK = qr(K[internal_dofs, internal_dofs])
+    u[internal_dofs] = qrK \ F[internal_dofs] 
+    # K[internal_dofs, internal_dofs] \ F[internal_dofs] 
+    u[meshboundary] .= boundary_vals # set the boundary values
     #plotunicode_solution(mesh, u)
+    Main.closeall()
+    f, L = Main.figure(1, fig3D = true)
+    u ./= maximum(abs.(u))
+    Main.plot_t(hcat(pv, u), t, scalars = u[:], representation = "surfacemesh", 
+                colormap = "hsv", scene = L[1])
+    Main.GraphicTools.finalizescene()
     return u
 end
 function rhs(points)
@@ -95,7 +106,7 @@ function rhs(points)
 end
 function boundary_condition(points)
     x, y = points[:, 1], points[:, 2]
-    return (1 - x) .* y .* sin.(pi * x)
+    return (1 .- x) .* y .* sin.(pi * x)
 end
 
 end # module
