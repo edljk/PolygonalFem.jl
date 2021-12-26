@@ -102,11 +102,11 @@ function vem(mesh_filename::String =
 end
 function rhs(points)
     x, y = points[:, 1], points[:, 2]
-    return 15 * sin.(pi * x) .* sin.(pi * y)
+    return 15 * sin.(π * x) .* sin.(π * y)
 end
 function boundary_condition(points)
     x, y = points[:, 1], points[:, 2]
-    return (1 .- x) .* y .* sin.(pi * x)
+    return (1 .- x) .* y .* sin.(π * x)
 end
 
 end # module
