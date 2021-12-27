@@ -6,23 +6,26 @@ using FileIO, JLD2, UnicodePlots
 include("assembly.jl")
 include("plot.jl")
 eye(n) = Matrix(I, n, n)
+
 """
- adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
+    vem(nc::Int64 = 1_00)
+
+N.B. 
+* nc = 100 or 1_000
+* adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
 function vem(nc::Int64 = 1_00)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
-    # load the mesh 
+    # load the mesh  + pv       : vertices of the cells 
+    #                + cellsb   : polygonal cells 
+    #                + celssbt  : triangulated cells 
+    #                + t        : all triangles 
+    #                + (pb, tb) :  restricted delaunay mesh 
     mesh_filename = "$(@__DIR__)/../test/data/squarepolmesh_$(nc).jld2"
-    JLD2.@load(mesh_filename, pv, cellsb, cellsbt) 
-    nt = sum(map(x -> size(x, 1), cellsbt))
-    t, ct = zeros(Int64, nt, 3), 1
-    for k = 1:length(cellsbt)
-        for l = 1:size(cellsbt[k], 1)
-            t[ct, :] .= cellsbt[k][l, :]
-            ct += 1
-        end
-    end
+    println("read file $(mesh_filename)")
+    JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
+    # boundary points
     meshboundary = unique(btri(t)[:])
     # identify boundary points
     n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
@@ -33,9 +36,6 @@ function vem(nc::Int64 = 1_00)
     linear_polynomials = [[0,0], [1,0], [0,1]] 
     # a utility function for wrapping around a vector
     mod_wrap(x, a) = mod(x - 1, a) + 1 
-    ##
-    measures, centers, _ = Main.ConvexTools.centers_momentum_geogram(zeros(1000, 2), pv, cellsbt)
-    areatot = 0.
     for el_id = 1:length(cellsb)
         #println(cellsb[el_id])
         vert_ids = cellsb[el_id]   # IDs of the vertices of this element
@@ -44,9 +44,6 @@ function vem(nc::Int64 = 1_00)
         area_components = verts[:, 1] .* [verts[2:end, 2]..., verts[1, 2]] .- 
                          [verts[2:end, 1]..., verts[1, 1]] .* verts[:, 2]
         area = 0.5 * abs(sum(area_components))
-        ##println(abs(area - sum(measures[el_id])), " | ", size(verts, 1))
-        ##
-        areatot += area
         centroid = sum((verts .+ vcat(verts[2:end, :], verts[1, :]')) .* 
                         repeat(area_components, 1, 2), dims = 1) / (6 * area)
         diameter = 0 # compute the diameter by looking at every pair of vertices
@@ -85,20 +82,13 @@ function vem(nc::Int64 = 1_00)
         K[vert_ids, vert_ids] += local_stiffness 
         F[vert_ids] .+= rhs(centroid) * area / n_sides
     end
-    println(areatot)
-    println(sum(sum.(measures)))
     boundary_vals = boundary_condition(pv[meshboundary, :])
     # vertices which aren’t on the boundary
     internal_dofs =  setdiff(1:n_dofs, meshboundary) 
     # apply the boundary condition
     F -= K[:, meshboundary] * boundary_vals 
     # solve
-    qrK = qr(K[internal_dofs, internal_dofs])
-    u[internal_dofs] = qrK \ F[internal_dofs] 
-    ##
-    println(norm( K[internal_dofs, internal_dofs] * u[internal_dofs] .-
-    F[internal_dofs]  ))
-    # K[internal_dofs, internal_dofs] \ F[internal_dofs] 
+    u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[meshboundary] .= boundary_vals # set the boundary values
     
     # plot
@@ -108,7 +98,11 @@ function vem(nc::Int64 = 1_00)
     Main.plot_t(hcat(pv, u), t, scalars = u[:], 
                 #representation = "surface", 
                 representation = "surfacemesh", 
-                colormap = "hsv", colorw = (0., 0., 0.), scene = L[1])
+                colormap = "hsv", colorw = (0., 0., 0.), 
+                scene = L[1])            
+    Main.plot_t(hcat(pb, fill(1, size(pb, 1), 1)), tb,  
+                representation = "mesh", 
+                colormap = "hsv", colorw = (0.5, 0., 0.), scene = L[1])
     Main.GraphicTools.finalizescene()
     return 
 end
