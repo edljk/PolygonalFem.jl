@@ -17,7 +17,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 </table>
 
-### Results with coarse Voronoi cells (obtained with ~ 100 Lloyd's iterations)
+### Results with random Voronoi cells
 
 <table>
 <tr>
