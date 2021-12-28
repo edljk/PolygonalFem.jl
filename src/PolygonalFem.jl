@@ -1,14 +1,15 @@
 module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
-using FileIO, JLD2, UnicodePlots
+using FileIO, JLD2
+using UnicodePlots, Makie, GeometryBasics, GLMakie, Colors, Interpolations
 
 include("assembly.jl")
 include("plot.jl")
 eye(n) = Matrix(I, n, n)
 
 """
-    vem(nc::Int64 = 1_00)
+    u, p, t = vem(nc::Int64 = 1_00)
 
 N.B. 
 * nc = 100 or 1_000
@@ -92,19 +93,8 @@ function vem(nc::Int64 = 1_00)
     u[meshboundary] .= boundary_vals # set the boundary values
     
     # plot
-    #plotunicode_solution(mesh, u)
-    Main.closeall()
-    f, L = Main.figure(1, fig3D = true)
-    Main.plot_t(hcat(pv, u), t, scalars = u[:], 
-                #representation = "surface", 
-                representation = "surfacemesh", 
-                colormap = "hsv", colorw = (0., 0., 0.), 
-                scene = L[1])            
-    Main.plot_t(hcat(pb, fill(1, size(pb, 1), 1)), tb,  
-                representation = "mesh", 
-                colormap = "hsv", colorw = (0.5, 0., 0.), scene = L[1])
-    Main.GraphicTools.finalizescene()
-    return 
+    plotsolution(u, pv, cellsb)
+    return u, pv, t
 end
 function rhs(points)
     x, y = points[:, 1], points[:, 2]

@@ -17,3 +17,23 @@ function plotunicode(U;
     print("\n")
     return nothing 
 end
+function plotsolution(u, p, cellsb)
+    GLMakie.destroy!(GLMakie.global_gl_screen())
+    fig = GLMakie.Figure(resolution = (400, 400))
+    ax = L = GLMakie.Axis(fig[1, 1])
+    ax.aspect = GLMakie.DataAspect() 
+    P = Polygon[]
+    for k = 1:length(cellsb)
+        push!(P, Polygon([Point2(p[m, 1], 
+                                 p[m, 2]) for m ∈ cellsb[k]])) # u[m]
+    end
+    colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
+                 length = 64)
+    colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)]
+    xu = range(minimum(u), stop = maximum(u), length = length(colS))
+    il = LinearInterpolation(xu, colmapS)
+    Makie.poly!(ax, P, 
+                color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
+    display(Makie.current_figure())
+    return
+end
