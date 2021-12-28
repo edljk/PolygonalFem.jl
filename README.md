@@ -5,7 +5,7 @@
 
 Adapted code from the article / matlab's code `The virtual element method in 50 lines of matlab`. See https://arxiv.org/pdf/1604.06021.pdf.
 
-## Results with regular Voronoi cells (obtained with ~ 1000 Lloyd's iterations)
+### Results with regular Voronoi cells (obtained with ~ 1000 Lloyd's iterations)
 <table>
 <tr>
     <td>
@@ -17,4 +17,4 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 </table>
 
-## Results with coarse Voronoi cells (obtained with ~ 100 Lloyd's iterations)
+### Results with coarse Voronoi cells (obtained with ~ 100 Lloyd's iterations)
