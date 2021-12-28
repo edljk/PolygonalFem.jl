@@ -20,10 +20,10 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
-    #                + cellsb   : polygonal cells 
+    #                + cellsb   : polygonal cells (⚠ orientation is crucial)
     #                + celssbt  : triangulated cells 
     #                + t        : all triangles 
-    #                + (pb, tb) :  restricted delaunay mesh 
+    #                + (pb, tb) : restricted delaunay mesh 
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
