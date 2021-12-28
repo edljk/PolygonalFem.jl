@@ -10,13 +10,13 @@ include("_genmeshes.jl")
 eye(n) = Matrix(I, n, n)
 
 """
-    u, p, t = vem(nc::Int64 = 1_00)
+    u, p, t = vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
 
 N.B. 
 * nc = 100 or 1_000
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
-function vem(nc::Int64 = 1_00)
+function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
@@ -24,7 +24,7 @@ function vem(nc::Int64 = 1_00)
     #                + celssbt  : triangulated cells 
     #                + t        : all triangles 
     #                + (pb, tb) :  restricted delaunay mesh 
-    mesh_filename = "$(@__DIR__)/../test/data/squarepolmesh_$(nc).jld2"
+    mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
     # boundary points
