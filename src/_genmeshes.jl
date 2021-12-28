@@ -8,10 +8,18 @@ function _genmeshes(; numb::Int64 = 2,
         "square"
     elseif numb == 4
         "flower"
+    elseif numb == 9
+        "L"
     end  
     # gen regular polygonal meshes using Lloyd
     for itmax ∈ nbit
-        strit = itmax == 1 ? "_coarse" : ""
+        strit = if itmax == 1 
+            "_coarse" 
+        elseif itmax < 1_000 
+            "_lesscoarse"
+        else
+             ""
+        end
         for npl ∈ np
             p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, drawvoronoi = false)
             # save 

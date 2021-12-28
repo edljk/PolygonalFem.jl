@@ -24,8 +24,9 @@ function plotsolution(u, p, cellsb)
     ax.aspect = GLMakie.DataAspect() 
     P = Polygon[]
     for k = 1:length(cellsb)
+        cc = [cellsb[k]..., cellsb[k][1]]
         push!(P, Polygon([Point2(p[m, 1], 
-                                 p[m, 2]) for m ∈ cellsb[k]])) # u[m]
+                                 p[m, 2]) for m ∈ cc])) # u[m]
     end
     colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
                  length = 64)
@@ -33,6 +34,7 @@ function plotsolution(u, p, cellsb)
     xu = range(minimum(u), stop = maximum(u), length = length(colS))
     il = LinearInterpolation(xu, colmapS)
     Makie.poly!(ax, P, 
+                strokecolor = :black, strokewidth = 2., 
                 color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
     display(Makie.current_figure())
     return
