@@ -6,6 +6,7 @@ using UnicodePlots, Makie, GeometryBasics, GLMakie, Colors, Interpolations
 
 include("assembly.jl")
 include("plot.jl")
+include("_genmeshes.jl")
 eye(n) = Matrix(I, n, n)
 
 """
