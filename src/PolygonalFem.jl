@@ -121,6 +121,6 @@ function boundary_condition_L(points)
     pV = [[x[k], y[k]] for k = 1:length(x)]
     rθ = PolarFromCartesian().(pV)
     r, θ = [rθ[k].r for k = 1:length(x)],  [rθ[k].θ for k = 1:length(x)]
-    return  r .^ (2 / 3.) .* sin.((2 * θ .- π) / 3)
+    return  r .^ (2 / 3.) .* sin.( 6 * (θ .- π / 2) / 3)
 end
 end # module
