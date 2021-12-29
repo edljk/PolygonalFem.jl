@@ -35,10 +35,10 @@ function _genmeshes(; numb::Int64 = 2,
 end
 #-------------------------------------------------------------------------------
 function _genfigures()
-    for file ∈ ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse",
-                "squarepolmesh", "squarepolmesh_lesscoarse", 
-                "squarepolmesh_coarse"]
-        for np ∈ [100, 1000, 10000]
+    for file ∈ [ "Lpolmesh_coarse",] #["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse",
+                #"squarepolmesh", "squarepolmesh_lesscoarse", 
+                #"squarepolmesh_coarse"]
+        for np ∈ [10000,] # [100, 1000, 10000]
             mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
            
             vem(file, np, resolution = 1_000)

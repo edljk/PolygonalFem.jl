@@ -60,13 +60,13 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 <tr>
     <td>
-        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_100.png" style=width:200px>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_100.png" style=width:200px>
      </td>
      <td>
-         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_1000.png"  style=width:200px>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_1000.png"  style=width:200px>
     </td>
      <td>
-         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_10000.png"  style=width:200px>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_10000.png"  style=width:200px>
     </td>
 </tr>
 </table>
@@ -87,13 +87,13 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 <tr>
     <td>
-        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_100.png" style=width:200px>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_lesscoarse_100.png" style=width:200px>
      </td>
      <td>
-         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_1000.png"  style=width:200px>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_lesscoarse_1000.png"  style=width:200px>
     </td>
      <td>
-         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_10000.png"  style=width:200px>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_lesscoarse_10000.png"  style=width:200px>
     </td>
 </tr>
 </table>
