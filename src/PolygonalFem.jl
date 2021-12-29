@@ -1,6 +1,6 @@
 module PolygonalFem
 
-using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
+using LinearAlgebra, StatsBase, SparseArrays, GroupSlices, CoordinateTransformations
 using FileIO, JLD2
 using UnicodePlots, Makie, GeometryBasics, GLMakie, Colors, Interpolations
 
@@ -27,7 +27,12 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
-    # boundary points
+    # boundary points / rhs 
+    rhs, boundary_condition = if occursin("square", mesh_filename)
+        rhs_sqr, boundary_condition_sqr
+    else
+        rhs_L, boundary_condition_L
+    end
     meshboundary = unique(btri(t)[:])
     # identify boundary points
     n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
@@ -97,13 +102,22 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
     plotsolution(u, pv, cellsb)
     return u, pv, t
 end
-function rhs(points)
+function rhs_sqr(points)
     x, y = points[:, 1], points[:, 2]
     return 15 * sin.(π * x) .* sin.(π * y)
 end
-function boundary_condition(points)
+function boundary_condition_sqr(points)
     x, y = points[:, 1], points[:, 2]
     return (1 .- x) .* y .* sin.(π * x)
 end
-
+function rhs_L(points)
+    return zeros(size(points, 1))
+end
+function boundary_condition_L(points)
+    x, y = points[:, 1], points[:, 2]
+    pV = [[x[k], y[k]] for k = 1:length(x)]
+    rθ = PolarFromCartesian().(pV)
+    r, θ = [rθ[k].r for k = 1:length(x)],  [rθ[k].θ for k = 1:length(x)]
+    return  r .^ (2 / 3.) .* sin.((2 * θ .- π) / 3)
+end
 end # module

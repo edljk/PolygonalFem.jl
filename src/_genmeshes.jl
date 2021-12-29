@@ -3,7 +3,8 @@
 """
 function _genmeshes(; numb::Int64 = 2, 
                       nbit::Union{Vector{Int64}, Int64} = [100,],
-                      np::Union{Vector{Int64}, Int64} = [100, 1_000, 10_000])
+                      np::Union{Vector{Int64}, Int64} = [100, 1_000, 10_000],
+                      drawvoronoi::Bool = false)
     support = if numb == 2
         "square"
     elseif numb == 4
@@ -21,7 +22,8 @@ function _genmeshes(; numb::Int64 = 2,
              ""
         end
         for npl ∈ np
-            p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, drawvoronoi = false)
+            p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, 
+                          drawvoronoi = drawvoronoi)
             # save 
             mesh_filename = "$(@__DIR__)/../test/data/$(support)polmesh$(strit)_$(npl).jld2"
             println(mesh_filename)
