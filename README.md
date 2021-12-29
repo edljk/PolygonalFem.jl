@@ -21,7 +21,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 </table>
 
-### Results with regular Voronoi cells (mesh obtained by ~ 1000 iterations of Lloyd's  algorithm)
+### Results with regular Voronoi cells (mesh obtained by 1000 iterations of Lloyd's  algorithm)
 <table>
 <tr>
     <td>
