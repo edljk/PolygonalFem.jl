@@ -5,7 +5,23 @@
 
 Adapted code from the article / matlab's code `The virtual element method in 50 lines of matlab`. See https://arxiv.org/pdf/1604.06021.pdf.
 
-### Results with regular Voronoi cells (obtained with ~ 1000 Lloyd's iterations)
+### Results with random Voronoi cells
+
+<table>
+<tr>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_100.png" style=width:200px>
+     </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_1000.png"  style=width:200px>
+    </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_10000.png"  style=width:200px>
+    </td>
+</tr>
+</table>
+
+### Results with regular Voronoi cells (mesh obtained by ~ 1000 iterations of Lloyd's  algorithm)
 <table>
 <tr>
     <td>
@@ -20,15 +36,18 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 </tr>
 </table>
 
-### Results with random Voronoi cells
 
+### Results with regular Voronoi cells (mesh obtained by 5 iterations of Lloyd's algorithm)
 <table>
 <tr>
     <td>
-        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_100.png" style=width:200px>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_lesscoarse_100.png" style=width:200px>
      </td>
      <td>
-         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_1000.png"  style=width:200px>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_lesscoarse_1000.png"  style=width:200px>
+    </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_lesscoarse_10000.png"  style=width:200px>
     </td>
 </tr>
 </table>
