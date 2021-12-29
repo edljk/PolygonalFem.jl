@@ -5,6 +5,19 @@
 
 Adapted code from the article / matlab's code `The virtual element method in 50 lines of matlab`. See https://arxiv.org/pdf/1604.06021.pdf.
 
+## Install PolygonalFem
+
+```julia
+>] add https://github.com/edljk/PolygonalFem.jl
+```
+
+## Benchmark
+
+```julia
+> using PolygonalFem
+> PolygonalFem.vem("squarepolmesh_lesscoarse", 1000)
+```
+
 ### Results with random Voronoi cells
 
 <table>
