@@ -17,9 +17,10 @@ function plotunicode(U;
     print("\n")
     return nothing 
 end
-function plotsolution(u, p, cellsb)
+function plotsolution(u, p, cellsb;
+                      resolution::Int64 = 400, mesh_filename::String = "")
     GLMakie.destroy!(GLMakie.global_gl_screen())
-    fig = GLMakie.Figure(resolution = (400, 400))
+    fig = GLMakie.Figure(resolution = (resolution, resolution))
     ax = L = GLMakie.Axis(fig[1, 1])
     ax.aspect = GLMakie.DataAspect() 
     P = Polygon[]
@@ -36,6 +37,16 @@ function plotsolution(u, p, cellsb)
     Makie.poly!(ax, P, 
                 strokecolor = :black, strokewidth = 2., 
                 color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
+    
+    Colorbar(fig[1, 2], limits = (minimum(u), maximum(u)), colormap = :hsv,
+              size = 10,  height = Relative(3/4))
+    if occursin("square", mesh_filename)
+        xlims!(ax, (0, 1.)) 
+        ylims!(ax, (0, 1.))
+    elseif occursin("L", mesh_filename)
+        xlims!(ax, (-1, 1.)) 
+        ylims!(ax, (-1, 1.))
+    end
     display(Makie.current_figure())
     return
 end

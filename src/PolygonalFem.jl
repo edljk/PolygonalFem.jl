@@ -10,13 +10,15 @@ include("_genmeshes.jl")
 eye(n) = Matrix(I, n, n)
 
 """
-    u, p, t = vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
+    u, p, t = vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
+                  resolution::Int64 = 400)
 
 N.B. 
 * nc = 100 or 1_000
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
-function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
+function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
+             resolution::Int64 = 400)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
@@ -99,7 +101,8 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00)
     u[meshboundary] .= boundary_vals # set the boundary values
     
     # plot
-    plotsolution(u, pv, cellsb)
+    plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
+                 resolution = resolution)
     return u, pv, t
 end
 function rhs_sqr(points)

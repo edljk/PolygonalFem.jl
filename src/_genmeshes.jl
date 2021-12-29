@@ -33,3 +33,20 @@ function _genmeshes(; numb::Int64 = 2,
     end
     nothing
 end
+#-------------------------------------------------------------------------------
+function _genfigures()
+    for file ∈ ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse",
+                "squarepolmesh", "squarepolmesh_lesscoarse", 
+                "squarepolmesh_coarse"]
+        for np ∈ [100, 1000, 10000]
+            mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
+           
+            vem(file, np, resolution = 1_000)
+            figfile = replace(replace(mesh_filename, "jld2" => "png"), 
+                                                     "data" => "figures")
+            println("save figure to $(figfile)")   
+            Makie.save(figfile, Makie.current_figure())
+        end
+    end
+    nothing 
+end

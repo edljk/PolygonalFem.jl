@@ -32,6 +32,17 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
          <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_10000.png"  style=width:200px>
     </td>
 </tr>
+<tr>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_100.png" style=width:200px>
+     </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_1000.png"  style=width:200px>
+    </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_10000.png"  style=width:200px>
+    </td>
+</tr>
 </table>
 
 ### Results with regular Voronoi cells (mesh obtained by 1000 iterations of Lloyd's  algorithm)
@@ -45,6 +56,17 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
      <td>
          <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_10000.png"  style=width:200px>
+    </td>
+</tr>
+<tr>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_100.png" style=width:200px>
+     </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_1000.png"  style=width:200px>
+    </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_10000.png"  style=width:200px>
     </td>
 </tr>
 </table>
@@ -61,6 +83,17 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
      <td>
          <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_lesscoarse_10000.png"  style=width:200px>
+    </td>
+</tr>
+<tr>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_100.png" style=width:200px>
+     </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_1000.png"  style=width:200px>
+    </td>
+     <td>
+         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/Lpolmesh_coarse_10000.png"  style=width:200px>
     </td>
 </tr>
 </table>
