@@ -163,7 +163,7 @@ function _plotorder(geom::String = "square")
     @load "/tmp/errors.jld2"
     GLMakie.destroy!(GLMakie.global_gl_screen())
     fig = GLMakie.Figure(resolution = (900, 400))
-    ax = L = GLMakie.Axis(fig[1, 1])
+    ax = L = GLMakie.Axis(fig[1, 1], xlabel = "log nb dof", ylabel = "log L² error ")
      plotsl, plotsm = Any[], Any[]
     markers = [:circle, :rect, :utriangle, :dtriangle]
     allfiles = if occursin("square", geom)  
