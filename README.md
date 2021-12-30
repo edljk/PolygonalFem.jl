@@ -18,8 +18,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 > PolygonalFem.vem("squarepolmesh_lesscoarse", 1000)
 ```
 
-### Numerical orders of convergence in the square case
-
+### Numerical convergence orders
 <table>
 <tr>
     <td>
