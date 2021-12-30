@@ -20,7 +20,16 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 
 ### Numerical orders of convergence in the square case
 
-<img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:400px>
+<table>
+<tr>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:300px>
+    </td>
+    <td>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_L.png" style=width:300px>
+    </td>
+</tr>
+</table>        
 
 ### Results with random Voronoi cells
 
