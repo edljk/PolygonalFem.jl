@@ -19,6 +19,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 ```
 
 ### Numerical convergence orders
+<center>
 <table>
 <tr>
     <td>
@@ -29,6 +30,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>        
+</center>
 
 ### Results with random Voronoi cells
 
