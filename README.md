@@ -34,6 +34,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 
 ### Results with random Voronoi cells
 
+<center>
 <table>
 <tr>
     <td>
@@ -58,8 +59,11 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>
+</center>
 
 ### Results with regular Voronoi cells (mesh obtained by 1000 iterations of Lloyd's  algorithm)
+
+<center>
 <table>
 <tr>
     <td>
@@ -84,9 +88,12 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>
+</center>
 
 
 ### Results with regular Voronoi cells (mesh obtained by 5 iterations of Lloyd's algorithm)
+
+<center>
 <table>
 <tr>
     <td>
@@ -111,3 +118,4 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>
+</center>
