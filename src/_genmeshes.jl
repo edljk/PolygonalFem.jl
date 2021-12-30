@@ -58,7 +58,6 @@ function _genmeshes(; numb::Int64 = 2,
         end
         # keep only interior points for voronoi cells
         Ik = setdiff(1:size(ptri, 1), unique(btri(tri)[:]))
-
         p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = 1, p = ptri[Ik, :], drawvoronoi = drawvoronoi)
         # save 
         mesh_filename = "$(@__DIR__)/../test/data/$(support)mesh_$(npl).jld2"
@@ -67,7 +66,6 @@ function _genmeshes(; numb::Int64 = 2,
                   "cellsbt", cellsbt, "pb", pb, "tb", tb, "t", t, 
                   "ptri", ptri, "tri", tri)
     end
-    
     nothing
 end
 #-------------------------------------------------------------------------------
@@ -80,7 +78,6 @@ function _genfigures()
                 "squarepolmesh_coarse"]
         for np ∈ [100, 1000, 10000]
             mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
-           
             vem(file, np, resolution = 1_000)
             figfile = replace(replace(mesh_filename, "jld2" => "png"), 
                                                      "data" => "figures")
@@ -133,6 +130,7 @@ function _generrors()
                                                            dsol["tri"], 
                                                            sols[ff][2])
         Inb = findall(Itri .> 0)
+        println("percentage of interior points ", length(Inb) / size(Itri, 1) * 100)
         ui = sum(dsol["u"][dsol["tri"][Itri[Inb], k]] .* baryc[Inb, k] for k = 1:3)
         err = maximum(abs.(ui .- sols[ff][1][Inb]))
         err = norm(ui .- sols[ff][1][Inb]) / sqrt(length(Inb))
