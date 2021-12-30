@@ -22,6 +22,7 @@ function _genpolmeshes(; numb::Int64 = 2,
              ""
         end
         for npl ∈ np
+            # WARNING function not available (only for local use)
             p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, 
                           drawvoronoi = drawvoronoi)
             # save 
@@ -51,6 +52,7 @@ function _genmeshes(; numb::Int64 = 2,
     end  
     # gen regular meshes calling triangle
     for npl ∈ np
+        # WARNING function not available (only for local use)
         _, ptri, tri = Main.MeshTools.triangle(numb, nbtri = 2 * npl)
         if numb == 2 # prefere a unit uncentered square
             ptri .+= 1
@@ -58,6 +60,7 @@ function _genmeshes(; numb::Int64 = 2,
         end
         # keep only interior points for voronoi cells
         Ik = setdiff(1:size(ptri, 1), unique(btri(tri)[:]))
+        # WARNING function not available (only for local use)
         p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = 1, p = ptri[Ik, :], drawvoronoi = drawvoronoi)
         # save 
         mesh_filename = "$(@__DIR__)/../test/data/$(support)mesh_$(npl).jld2"
@@ -90,9 +93,20 @@ end
 #-------------------------------------------------------------------------------
 """
    FOR POST PROCESSING ONLY
+
+CALL: _gensolutions(); _generrors(); _plotorder("square")
 """
 function _gensolutions()
     sols = Dict()
+      # P1 solutions
+      for file ∈ ["Lmesh", "squaremesh"]     
+        for np ∈ [100, 1000, 10000]
+            mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
+            u, ptri, tri, Ib = P1(file, np, resolution = 0)
+            sols[mesh_filename] = (u, ptri, tri, Ib)
+        end
+    end
+    # Virtual method solutions
     for file ∈ ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse",
                 "squarepolmesh", "squarepolmesh_lesscoarse", 
                 "squarepolmesh_coarse"]     
@@ -130,7 +144,8 @@ function _generrors()
                                                            dsol["tri"], 
                                                            sols[ff][2])
         Inb = findall(Itri .> 0)
-        println("percentage of interior points ", length(Inb) / size(Itri, 1) * 100)
+        println("percentage of interior points ", length(Inb) / size(Itri, 1) * 
+                                                  100)
         ui = sum(dsol["u"][dsol["tri"][Itri[Inb], k]] .* baryc[Inb, k] for k = 1:3)
         err = maximum(abs.(ui .- sols[ff][1][Inb]))
         err = norm(ui .- sols[ff][1][Inb]) / sqrt(length(Inb))
@@ -144,16 +159,22 @@ end
 """
    FOR POST PROCESSING ONLY
 """
-function _plotorder()
+function _plotorder(geom::String = "square")
     @load "/tmp/errors.jld2"
-    Main.closeall()
-    f, L = Main.figure(1, square_axis = false, resolution = (400, 800))
-    plotsl, plotsm = Any[], Any[]
+    GLMakie.destroy!(GLMakie.global_gl_screen())
+    fig = GLMakie.Figure(resolution = (900, 400))
+    ax = L = GLMakie.Axis(fig[1, 1])
+     plotsl, plotsm = Any[], Any[]
     markers = [:circle, :rect, :utriangle, :dtriangle]
-    allfiles = ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse"]
-    #allfiles = ["squarepolmesh", "squarepolmesh_lesscoarse","squarepolmesh_coarse"]  
+    allfiles = if occursin("square", geom)  
+        ["squarepolmesh", "squarepolmesh_lesscoarse", "squarepolmesh_coarse",
+          "squaremesh"]  
+    else
+        ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse", "Lmesh"] 
+    end
     cm = 1
-    colors = [RGB(0.8, 0.2, 0.1), RGB(0.8, 0.8, 0.1), RGB(0.1, 0.8, 0.2)]
+    colors = [RGB(0.8, 0.2, 0.1), RGB(0.8, 0.8, 0.1), RGB(0.1, 0.8, 0.2),
+              RGB(0.1, 0.1, 0.8)]
     for file ∈ allfiles
         x, y = Float64[], Float64[] 
         for np ∈ [100, 1000, 10000]
@@ -163,21 +184,24 @@ function _plotorder()
             push!(y, log(err))
             
         end
-        println(x)
-        println(y)
         cr = colors[cm] #rand(RGB)
         push!(plotsl, Makie.lines!(x, y, linewidth = 5, color = cr))
         push!(plotsm, Makie.scatter!(x, y, color = cr, marker = markers[cm],
               markersize = 12))
         cm += 1
     end
-    ax = Axis(f[1, 1])
-   # Makie.axislegend(ax, [[plotsl[k], plotsm[k]] for k = 1:length(allfiles)],
-   # allfiles, "Selected Dots", position = :rb,
-   # orientation = :horizontal)
-   Makie.Legend(f[2, 1], [[plotsl[k], plotsm[k]] for k = 1:length(allfiles)],
+    ax = Axis(fig[1, 1])
+    Makie.Legend(fig[2, 1], [[plotsl[k], plotsm[k]] for k = 1:length(allfiles)],
                  allfiles, tellwidth = false, tellheight = true,
                  orientation = :horizontal)
-    Main.GraphicTools.finalizescene()
+    display(Makie.current_figure())
+    figfile = if occursin("square", geom) 
+        "$(@__DIR__)/../test/figures/convergence_square.png"
+    else
+        "$(@__DIR__)/../test/figures/convergence_L.png"
+    end
+    println("save figure to $(figfile)")   
+    Makie.save(figfile, Makie.current_figure())
+    display(Makie.current_figure())
     nothing
 end
