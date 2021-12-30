@@ -151,7 +151,7 @@ function _plotorder()
     plotsl, plotsm = Any[], Any[]
     markers = [:circle, :rect, :utriangle, :dtriangle]
     allfiles = ["Lpolmesh", "Lpolmesh_lesscoarse", "Lpolmesh_coarse"]
-    #allfiles = ["squarepolmesh", "squarepolmesh_lesscoarse","squarepolmesh_coarse"]  
+    allfiles = ["squarepolmesh", "squarepolmesh_lesscoarse","squarepolmesh_coarse"]  
     cm = 1
     colors = [RGB(0.8, 0.2, 0.1), RGB(0.8, 0.8, 0.1), RGB(0.1, 0.8, 0.2)]
     for file ∈ allfiles
@@ -160,7 +160,7 @@ function _plotorder()
             mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
             err, nbdof = errors[mesh_filename]
             push!(x, log(nbdof))
-            push!(y, err)
+            push!(y, log(err))
             
         end
         println(x)

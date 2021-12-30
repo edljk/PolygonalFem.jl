@@ -18,6 +18,10 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 > PolygonalFem.vem("squarepolmesh_lesscoarse", 1000)
 ```
 
+### Numerical orders of convergence in the square case
+
+<img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:400px>
+
 ### Results with random Voronoi cells
 
 <table>
