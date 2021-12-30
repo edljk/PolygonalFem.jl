@@ -20,7 +20,8 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 
 ### Numerical convergence orders
 
-<table class="center">
+<center>
+<table>
 <tr>
     <td>
         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:400px>
@@ -30,10 +31,12 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>        
+</center>
 
 ### Results with random Voronoi cells
 
-<table class="center">
+<center>
+<table>
 <tr>
     <td>
         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_100.png" style=width:200px>
@@ -57,9 +60,10 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
     </td>
 </tr>
 </table>
+</center>
 
 ### Results with regular Voronoi cells (mesh obtained by 1000 iterations of Lloyd's  algorithm)
-<table class="center">
+<table>
 <tr>
     <td>
          <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_100.png"  style=width:200px>
@@ -86,7 +90,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 
 
 ### Results with regular Voronoi cells (mesh obtained by 5 iterations of Lloyd's algorithm)
-<table class="center">
+<table>
 <tr>
     <td>
         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_lesscoarse_100.png" style=width:200px>
