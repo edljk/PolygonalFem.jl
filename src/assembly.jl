@@ -24,9 +24,9 @@ function indKM_sparse(t)
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """
-     SK, SM = assembKM_P12D(p, t)
+     K, M = assembKM_P12D(p, t)
 
-assemble the P1 stifness and mass matrices coefficients.
+assemble the P1 stifness and mass matrices.
 """
 function assembKM_P12D(p, t)
     np, dim, nt = size(p, 1), size(p, 2), size(t, 1)
@@ -43,7 +43,11 @@ function assembKM_P12D(p, t)
     aod = arM / 12. # off diagonal element
     ad = 2 * aod    # diagonal element
     SM = vcat(aod, aod, aod, aod, aod, aod, ad, ad, ad)
-    return SK, SM
+    # matrices 
+    I, J = indKM_sparse(t)
+    K = sparse(I, J, SK, np, np)
+    M = sparse(I, J, SM, np, np)
+    return K, M
 end 
 #-------------------------------------------------------------------------------
 """

@@ -5,13 +5,15 @@ using FileIO, JLD2
 using UnicodePlots, Makie, GeometryBasics, GLMakie, Colors, Interpolations
 
 include("assembly.jl")
+include("solveP1.jl")
 include("plot.jl")
 include("_genmeshes.jl")
 eye(n) = Matrix(I, n, n)
 
 """
-    u, p, t = vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
-                  resolution::Int64 = 400)
+    u, p, t, meshboundary = vem(filename::String = "squarepolmesh_coarse",
+                                nc::Int64 = 1_00;
+                                resolution::Int64 = 400)
 
 N.B. 
 * nc = 100 or 1_000
@@ -101,9 +103,11 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     u[meshboundary] .= boundary_vals # set the boundary values
     
     # plot
-    plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
-                 resolution = resolution)
-    return u, pv, t
+    if resolution > 0
+        plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
+                     resolution = resolution)
+    end
+    return u, pv, t, meshboundary
 end
 function rhs_sqr(points)
     x, y = points[:, 1], points[:, 2]
