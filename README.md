@@ -22,10 +22,10 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 <table>
 <tr>
     <td>
-        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:300px>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_square.png" style=width:400px>
     </td>
     <td>
-        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_L.png" style=width:300px>
+        <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/convergence_L.png" style=width:400px>
     </td>
 </tr>
 </table>        
