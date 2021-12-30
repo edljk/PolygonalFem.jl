@@ -34,7 +34,7 @@ Adapted code from the article / matlab's code `The virtual element method in 50 
 ### Results with random Voronoi cells
 
 
-<table style="margin-left:auto;margin-right:auto;">
+<table>
 <tr>
     <td>
         <img src="https://github.com/edljk/PolygonalFem.jl/blob/main/test/figures/squarepolmesh_coarse_100.png" style=width:200px>
