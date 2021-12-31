@@ -33,9 +33,11 @@ function P1(filename::String = "squaremesh", nc::Int64 = 1_00;
     if resolution > 0
         GLMakie.destroy!(GLMakie.global_gl_screen())
         f, L = Main.figure(1, fig3D = true, (resolution, resolution))
-        Main.plot_t(hcat(ptri, u), tri, representation = "meshsurface", 
-                    scalars = u, colormap = "hsv", colorw = (0., 0, 0), 
-                    scene = L[1])
+        h = Main.plot_t(hcat(ptri, u), tri, representation = "meshsurface", 
+                        scalars = u, colormap = "hsv", colorw = (0., 0, 0), 
+                        scene = L[1])
+        Colorbar(f[1, 2], limits = (minimum(u), maximum(u)), colormap = :hsv,
+                  size = 10,  height = Relative(3/4))
     end
     return u, ptri, tri, Ib 
 end
