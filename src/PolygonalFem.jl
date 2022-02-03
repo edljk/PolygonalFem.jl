@@ -2,8 +2,10 @@ module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices, CoordinateTransformations
 using FileIO, JLD2
-using UnicodePlots, Makie, GeometryBasics, GLMakie, Colors, Interpolations
-
+using UnicodePlots, GeometryBasics, Colors, Interpolations
+if :GraphicTools ∈ names(Main, all = true, imported = true)
+    using Makie, GLMakie
+end
 include("assembly.jl")
 include("solveP1.jl")
 include("plot.jl")

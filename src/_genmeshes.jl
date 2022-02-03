@@ -128,7 +128,7 @@ end
    FOR POST PROCESSING ONLY
 """
 function _generrors()
-    @load "/tmp/sols.jld2" 
+    #@load "/tmp/sols.jld2" 
     fsolsquare = "$(@__DIR__)/../test/data/squaresolution_100000.jld2"
     fsolL = "$(@__DIR__)/../test/data/Lsolution_100000.jld2"
     dsolsquare, dsolL =  FileIO.load(fsolsquare), FileIO.load(fsolL)
@@ -159,7 +159,7 @@ function _generrors()
     nothing
 end
 function _ploterror(file::String = "squarepolmesh_coarse", np::Int64 = 1_00)
-    @load "/tmp/sols.jld2" 
+    #@load "/tmp/sols.jld2" 
     mesh_filename = "$(@__DIR__)/../test/data/$(file)_$(np).jld2"
     ff = mesh_filename
     mesh_filename = replace(mesh_filename, "polmeshP1" => "mesh")
@@ -205,7 +205,7 @@ end
    FOR POST PROCESSING ONLY
 """
 function _plotorder(geom::String = "square")
-    @load "/tmp/errors.jld2"
+    #@load "/tmp/errors.jld2"
     GLMakie.destroy!(GLMakie.global_gl_screen())
     fig = GLMakie.Figure(resolution = (1200, 400))
     ax = L = GLMakie.Axis(fig[1, 1], xlabel = "log nb dof", ylabel = "log L² error ")
