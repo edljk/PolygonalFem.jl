@@ -10,18 +10,11 @@ function meshareas(p, t)
     return reshape(abs.(mes), length(mes))
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
-""" 
-   I, J = indKM_sparse(t)
-
-non zero indices in stiffness and mass P1 sparse matrices
 """
-function indKM_sparse(t)
-    it1, it2, it3 = t[:, 1], t[:, 2], t[:, 3] 
-    I = vcat(it1, it2, it3, it2, it3, it1, it1, it2, it3)
-    J = vcat(it2, it3, it1, it1, it2, it3, it1, it2, it3)
-    return I, J
-end
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
+   IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
+
+Assemble stiffness and source terms of virtual element approach
+"""
 function assembKM_vemKsource(pv, cellsb, rhs)
     # type of input (for overloaded differentiation calls)
     typein = typeof(pv[1])
@@ -32,7 +25,6 @@ function assembKM_vemKsource(pv, cellsb, rhs)
         Float64[], Float64[]
     else
         Any[], Any[]
-
     end
     # impose an ordering on the linear polynomials
     linear_polynomials = [[0,0], [1,0], [0,1]] 
@@ -90,6 +82,18 @@ function assembKM_vemKsource(pv, cellsb, rhs)
         append!(SF, repeat(rhs(centroid) * area / n_sides, length(vert_ids))) 
     end
     return IK, JK, SK, IF, SF
+end
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
+""" 
+   I, J = indKM_sparse(t)
+
+non zero indices in stiffness and mass P1 sparse matrices
+"""
+function indKM_sparse(t)
+    it1, it2, it3 = t[:, 1], t[:, 2], t[:, 3] 
+    I = vcat(it1, it2, it3, it2, it3, it1, it1, it2, it3)
+    J = vcat(it2, it3, it1, it1, it2, it3, it1, it2, it3)
+    return I, J
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """

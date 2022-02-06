@@ -62,7 +62,7 @@ function ∇costnormU(pvin, cellsb, t, rhs, boundary_condition)
     # solve
     u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[meshboundary] .= boundary_vals # set the boundary values
-      # cost gradient and adjoint function
+    # cost gradient and adjoint function
     JFU = - 2 * u / n_dofs
     λ = K' \ JFU
     # compute full gradient by automatic differentiation

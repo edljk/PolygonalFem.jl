@@ -1,4 +1,4 @@
-using Test, JLD2, UnicodePlots
+using Test, JLD2
 #
 # gradient computation by parial automatic differentiation and adjoint merthods 
 # of 
@@ -23,9 +23,8 @@ end
 np, ε = size(pv, 1), 1e-3
 x, dp = pv, 2 * rand(size(pv)...) .- 1
 Ib = unique(PolygonalFem.btri(t)[:])
-dp[Ib, :] .= 0.# fix Dirichlet points
+dp[Ib, :] .= 0.# fix Dirichlet / boundary points
 xp, xm = x .+ ε * dp, x .- ε * dp
-
 # finite differences
 f = x -> PolygonalFem.costnormU(x, cellsb, t, rhs, boundary_condition)
 fp, fm = f(xp), f(xm)

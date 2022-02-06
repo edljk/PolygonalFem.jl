@@ -1,8 +1,9 @@
 module PolygonalFem
 
-using LinearAlgebra, StatsBase, SparseArrays, GroupSlices, CoordinateTransformations, Interpolations
-using ReverseDiff
-using FileIO, JLD2,  UnicodePlots, GeometryBasics, Makie, GLMakie, Colors
+using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
+using ReverseDiff, CoordinateTransformations, Interpolations
+using FileIO, JLD2, GeometryBasics, Makie, GLMakie, Colors
+
 include("assembly.jl")
 include("adjoint.jl")
 include("plot.jl")
