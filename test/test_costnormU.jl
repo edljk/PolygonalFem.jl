@@ -9,7 +9,7 @@ using Test, JLD2, UnicodePlots
 # 
 
 # load polygonal mesh 
-filename, nc = "squarepolmesh_coarse", 10_000
+filename, nc = "squarepolmesh_coarse", 100
 mesh_filename = "$(@__DIR__)/data/$(filename)_$(nc).jld2"
 println("read file $(mesh_filename)")
 JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
@@ -20,7 +20,7 @@ else
     PolygonalFem.rhs_L, PolygonalFem.boundary_condition_L
 end
 
-np, ε = size(pv, 1), 1e-4
+np, ε = size(pv, 1), 1e-3
 x, dp = pv, 2 * rand(size(pv)...) .- 1
 Ib = unique(PolygonalFem.btri(t)[:])
 dp[Ib, :] .= 0.# fix Dirichlet points
