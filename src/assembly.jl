@@ -1,4 +1,3 @@
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """
     mes = meshmeasures(p, t)
 
@@ -23,12 +22,18 @@ function indKM_sparse(t)
     return I, J
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
-function assembKM_vemKsource(cellsb, pv, rhs)
+function assembKM_vemKsource(pv, cellsb, rhs)
+    # type of input (for overloaded differentiation calls)
+    typein = typeof(pv[1])
     n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
-    # stiffness coefficients
-    IK, JK, SK = Int64[], Int64[], Float64[]
-    # source coefficients   
-    IF, SF = Int64[], Float64[]
+    # stiffness coefficients and source coefficients   
+    IK, JK, IF = Int64[], Int64[], Int64[]
+    SK, SF = if typein == Float64 
+        Float64[], Float64[]
+    else
+        Any[], Any[]
+
+    end
     # impose an ordering on the linear polynomials
     linear_polynomials = [[0,0], [1,0], [0,1]] 
     # a utility function for wrapping around a vector
@@ -49,9 +54,9 @@ function assembKM_vemKsource(cellsb, pv, rhs)
                 diameter = max(diameter, norm(verts[i, :] .- verts[j, :]))
             end
         end
-        D = zeros(n_sides, n_polys) 
+        D = zeros(typein, n_sides, n_polys) 
         D[:, 1] .= 1
-        B = zeros(n_polys, n_sides) 
+        B = zeros(typein, n_polys, n_sides) 
         B[1, :] .= 1 / n_sides
         for vertex_id = 1:n_sides
             vert = verts[vertex_id, :] # this vertex and its neighbours

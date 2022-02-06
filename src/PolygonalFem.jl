@@ -1,10 +1,12 @@
 module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices, CoordinateTransformations, Interpolations
+using ReverseDiff
 using FileIO, JLD2,  UnicodePlots, GeometryBasics, Makie, GLMakie, Colors
 include("assembly.jl")
 include("adjoint.jl")
 include("plot.jl")
+
 #-------------------------------------------------------------------------------
 if :GraphicTools ∈ names(Main, all = true, imported = true)
     include("solveP1.jl")
@@ -18,7 +20,7 @@ eye(n) = Matrix(I, n, n)
                                 resolution::Int64 = 400)
 
 N.B. 
-* nc = 100 or 1_000
+* nc = 100, 1_000 or 10_000
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
 function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
@@ -44,7 +46,7 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     meshboundary = unique(btri(t)[:])
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource(cellsb, pv, rhs)
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
     boundary_vals = boundary_condition(pv[meshboundary, :])
