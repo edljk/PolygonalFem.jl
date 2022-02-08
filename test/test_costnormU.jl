@@ -26,10 +26,10 @@ Ib = unique(PolygonalFem.btri(t)[:])
 dp[Ib, :] .= 0.# fix Dirichlet / boundary points
 xp, xm = x .+ ε * dp, x .- ε * dp
 # finite differences
-f = x -> PolygonalFem.costnormU(x, cellsb, t, rhs, boundary_condition)
+f = x -> PolygonalFem.costnormU(x, cellsb, t, rhs, boundary_condition, Ib)
 fp, fm = f(xp), f(xm)
-@time g = PolygonalFem.∇costnormU(x, cellsb, t, rhs, boundary_condition)
-@time g = PolygonalFem.∇costnormU(x, cellsb, t, rhs, boundary_condition)
+@time g = PolygonalFem.∇costnormU(x, cellsb, t, rhs, boundary_condition, Ib)
+@time g = PolygonalFem.∇costnormU(x, cellsb, t, rhs, boundary_condition, Ib)
 println("")
 println(fp)
 println(fm)

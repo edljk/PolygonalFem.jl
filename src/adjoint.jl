@@ -19,22 +19,19 @@ function fill_vertices!(pvector, parray)
     return nothing 
 end
 #-------------------------------------------------------------------------------
-function costnormU(pvin, cellsb, t, rhs, boundary_condition)
+function costnormU(pvin, cellsb, t, rhs, boundary_condition, meshboundary)
     # copy coordinates
     pv = reshape(pvin, length(pvin) ÷ 2, 2)
     n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
-    # identify boundary points
-    meshboundary = unique(btri(t)[:])
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
+                                             boundary_condition, meshboundary)
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
     boundary_vals = boundary_condition(pv[meshboundary, :])
     # vertices which aren’t on the boundary
     internal_dofs =  setdiff(1:n_dofs, meshboundary) 
-    # apply the boundary condition
-    F -= K[:, meshboundary] * boundary_vals 
     # solve
     u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[meshboundary] .= boundary_vals # set the boundary values
@@ -43,42 +40,51 @@ function costnormU(pvin, cellsb, t, rhs, boundary_condition)
     return val
 end
 #-------------------------------------------------------------------------------
-function ∇costnormU(pvin, cellsb, t, rhs, boundary_condition)
+function ∇costnormU(pvin, cellsb, t, rhs, boundary_condition, meshboundary)
     # copy coordinates
     pv = reshape(pvin, length(pvin) ÷ 2, 2)
     n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
-    # identify boundary points
-    meshboundary = unique(btri(t)[:])
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
+                                             boundary_condition, meshboundary)
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
     boundary_vals = boundary_condition(pv[meshboundary, :])
     # vertices which aren’t on the boundary
     internal_dofs =  setdiff(1:n_dofs, meshboundary) 
-    # apply the boundary condition
-    F -= K[:, meshboundary] * boundary_vals 
     # solve
     u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[meshboundary] .= boundary_vals # set the boundary values
     # cost gradient and adjoint function
     JFU = - 2 * u / n_dofs
     λ = K' \ JFU
+    λ = zeros(length(u))
+    λ[internal_dofs] = K'[internal_dofs, internal_dofs] \ JFU[internal_dofs]  
     # compute full gradient by automatic differentiation
-    ∇prodgrad = ReverseDiff.gradient(x -> prodgrad(x, cellsb, t, rhs, u, λ), pv)
+    ∇prodgrad = ReverseDiff.gradient(x -> prodgrad(x, cellsb, t, rhs, 
+                                                   boundary_condition,
+                                                   meshboundary, u, λ), pv)
     return ∇prodgrad
 end
 #-------------------------------------------------------------------------------
-function prodgrad(pv, cellsb, t, rhs, u, λ)
+function prodgrad(pv, cellsb, t, rhs, boundary_condition, meshboundary, u, λ)
     # assemble matrices
-    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
+    n_dofs = size(pv, 1)
+    meshboundary = unique(PolygonalFem.btri(t)[:])
+    internal_dofs =  setdiff(1:n_dofs, meshboundary) 
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
+                                             boundary_condition, meshboundary)
     val = 0.
     for (i, j, s) ∈ zip(IK, JK, SK)
-        val += λ[i] * s * u[j]
+        if i ∉ meshboundary && j ∉ meshboundary
+            val += λ[i] * s * u[j]
+        end
     end
     for (i, s) ∈ zip(IF, SF)
-        val -= λ[i] * s 
+        #if i ∉ meshboundary 
+            val -= λ[i] * s 
+        #end
     end
     return val
 end

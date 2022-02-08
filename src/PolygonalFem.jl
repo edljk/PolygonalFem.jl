@@ -74,6 +74,7 @@ end
 function boundary_condition_sqr(points)
     x, y = points[:, 1], points[:, 2]
     return (1 .- x) .* y .* sin.(π * x)
+    #return zeros(length(x))
 end
 #-------------------------------------------------------------------------------
 function rhs_L(points)
