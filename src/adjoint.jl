@@ -65,7 +65,9 @@ function ∇costnormU(pvin, cellsb, t, rhs, boundary_condition, meshboundary)
     ∇prodgrad = ReverseDiff.gradient(x -> prodgrad(x, cellsb, t, rhs, 
                                                    boundary_condition,
                                                    meshboundary, u, λ), pv)
-    return ∇prodgrad
+    # gradient contribution of boundary points
+    ∇Dirichlet = ReverseDiff.gradient(x -> sum(boundary_condition(x[meshboundary, :]) .^ 2) / n_dofs, pv)
+    return ∇prodgrad + ∇Dirichlet
 end
 #-------------------------------------------------------------------------------
 function prodgrad(pv, cellsb, t, rhs, boundary_condition, meshboundary, u, λ)
@@ -76,15 +78,15 @@ function prodgrad(pv, cellsb, t, rhs, boundary_condition, meshboundary, u, λ)
     IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
                                              boundary_condition, meshboundary)
     val = 0.
+    # consider only internal points
+    Jinmesh = indexin(JK, meshboundary)
+    Jboundary = findall(Jinmesh .!= nothing)
+    SK[Jboundary] .= 0.
     for (i, j, s) ∈ zip(IK, JK, SK)
-        if i ∉ meshboundary && j ∉ meshboundary
-            val += λ[i] * s * u[j]
-        end
+        val += λ[i] * s * u[j]
     end
-    for (i, s) ∈ zip(IF, SF)
-        #if i ∉ meshboundary 
-            val -= λ[i] * s 
-        #end
+    for (i, s) ∈ zip(IF, SF) 
+        val -= λ[i] * s 
     end
     return val
 end
