@@ -36,7 +36,7 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
-    # boundary points / rhs 
+    # boundary points / rhs  
     rhs, boundary_condition = if occursin("square", mesh_filename)
         rhs_sqr, boundary_condition_sqr
     else
@@ -47,7 +47,8 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     meshboundary = unique(btri(t)[:])
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs)
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
+                                             boundary_condition, meshboundary)
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
     boundary_vals = boundary_condition(pv[meshboundary, :])
