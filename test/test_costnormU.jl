@@ -1,4 +1,4 @@
-using Test, JLD2
+using Test, JLD2, LinearAlgebra
 #
 # gradient computation by parial automatic differentiation and adjoint merthods 
 # of 

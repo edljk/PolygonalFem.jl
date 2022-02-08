@@ -1,6 +1,3 @@
 using PolygonalFem
-using Test
 
-@testset "PolygonalFem.jl" begin
-    # Write your tests here.
-end
+include("test_costnormU.jl")

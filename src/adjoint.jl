@@ -62,11 +62,19 @@ function ∇costnormU(pvin, cellsb, t, rhs, boundary_condition, meshboundary)
     λ = zeros(length(u))
     λ[internal_dofs] = K'[internal_dofs, internal_dofs] \ JFU[internal_dofs]  
     # compute full gradient by automatic differentiation
-    ∇prodgrad = ReverseDiff.gradient(x -> prodgrad(x, cellsb, t, rhs, 
-                                                   boundary_condition,
-                                                   meshboundary, u, λ), pv)
+    fprod(x) = prodgrad(x, cellsb, t, rhs, boundary_condition, meshboundary, 
+                        u, λ)
+    ∇prodgrad = ReverseDiff.gradient(fprod, pv)
+    #= optimization tests
+    ∇prodgrad2 = similar(∇prodgrad)
+    f_tape = GradientTape(fprod, randn(size(pv)))
+    compiled_f_tape = compile(f_tape)
+    @time gradient!(∇prodgrad2, compiled_f_tape, pv)
+    println("diff grads = $(norm(∇prodgrad2 - ∇prodgrad2))")
+    =#
     # gradient contribution of boundary points
-    ∇Dirichlet = ReverseDiff.gradient(x -> sum(boundary_condition(x[meshboundary, :]) .^ 2) / n_dofs, pv)
+    fboundary(x) = sum(boundary_condition(x[meshboundary, :]) .^ 2) / n_dofs
+    ∇Dirichlet = ReverseDiff.gradient(fboundary, pv)
     return ∇prodgrad + ∇Dirichlet
 end
 #-------------------------------------------------------------------------------

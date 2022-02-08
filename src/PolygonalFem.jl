@@ -2,6 +2,7 @@ module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
 using ReverseDiff, CoordinateTransformations, Interpolations
+using ReverseDiff: GradientTape, GradientConfig, gradient, gradient!, compile
 using FileIO, JLD2, GeometryBasics, Makie, GLMakie, Colors
 
 include("assembly.jl")
