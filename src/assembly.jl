@@ -63,7 +63,8 @@ function assembKM_vemKsource(pv, cellsb, rhs, boundary_condition,
                 poly_degree = linear_polynomials[poly_id]
                 # gradient of a linear polynomial is constant
                 monomial_grad = poly_degree / diameter 
-                D[vertex_id, poly_id] = dot(vert .- centroid[:], poly_degree) / diameter
+                D[vertex_id, poly_id] = dot(vert .- centroid[:], 
+                                            poly_degree) / diameter
                 B[poly_id, vertex_id] = 0.5 * dot(monomial_grad, vertex_normal)
             end
         end

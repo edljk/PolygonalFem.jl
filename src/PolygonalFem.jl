@@ -54,8 +54,6 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     boundary_vals = boundary_condition(pv[meshboundary, :])
     # vertices which aren’t on the boundary
     internal_dofs =  setdiff(1:n_dofs, meshboundary) 
-    # apply the boundary condition
-    F -= K[:, meshboundary] * boundary_vals 
     # solve
     u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[meshboundary] .= boundary_vals # set the boundary values
