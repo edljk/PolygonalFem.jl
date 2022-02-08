@@ -20,7 +20,7 @@ else
     PolygonalFem.rhs_L, PolygonalFem.boundary_condition_L
 end
 
-np, ε = size(pv, 1), 1e-3
+np, ε = size(pv, 1), 1e-4
 x, dp = pv, 2 * rand(size(pv)...) .- 1
 Ib = unique(PolygonalFem.btri(t)[:])
 xp, xm = x .+ ε * dp, x .- ε * dp
