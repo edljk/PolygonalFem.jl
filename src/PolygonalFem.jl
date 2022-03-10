@@ -6,6 +6,7 @@ using ReverseDiff: GradientTape, GradientConfig, gradient, gradient!, compile
 using FileIO, JLD2, GeometryBasics, Makie, GLMakie, Colors
 
 include("assembly.jl")
+include("assembly_elas.jl")
 include("adjoint.jl")
 include("plot.jl")
 

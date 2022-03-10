@@ -17,12 +17,11 @@ function plotunicode(U;
     print("\n")
     return nothing 
 end
-function plotsolution(u, p, cellsb;
+function plotsolution(uin, p, cellsb;
                       resolution::Int64 = 400, mesh_filename::String = "")
     GLMakie.destroy!(GLMakie.global_gl_screen())
-    fig = GLMakie.Figure(resolution = (resolution, resolution))
-    ax = L = GLMakie.Axis(fig[1, 1])
-    ax.aspect = GLMakie.DataAspect() 
+    dim = length(uin) ÷ size(p, 1)
+    fig = GLMakie.Figure(resolution = (dim * resolution, resolution)) 
     P = Polygon[]
     for k = 1:length(cellsb)
         cc = [cellsb[k]..., cellsb[k][1]]
@@ -32,20 +31,36 @@ function plotsolution(u, p, cellsb;
     colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
                  length = 64)
     colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)]
-    xu = range(minimum(u), stop = maximum(u), length = length(colS))
-    il = LinearInterpolation(xu, colmapS)
-    Makie.poly!(ax, P, 
-                strokecolor = :black, strokewidth = 2., 
-                color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
+    dim = length(uin) ÷ size(p, 1)
+    for k = 1:dim 
+        ax = L = GLMakie.Axis(fig[1, 2 * k - 1])
+        ax.aspect = GLMakie.DataAspect()
+        u, title = if dim == 1
+            uin, ""
+        elseif k == 1
+            uin[1:2:end], "ux"
+        elseif k == 2
+            uin[2:2:end], "uy"
+        end
+        if length(title) > 0 
+            ax.title = title
+        end
+        xu = range(minimum(u), stop = maximum(u), length = length(colS))
+        il = LinearInterpolation(xu, colmapS)
+        Makie.poly!(ax, P, 
+                    strokecolor = :black, strokewidth = 2., 
+                    color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
     
-    Colorbar(fig[1, 2], limits = (minimum(u), maximum(u)), colormap = :hsv,
-              size = 10,  height = Relative(3/4))
-    if occursin("square", mesh_filename)
-        xlims!(ax, (0, 1.)) 
-        ylims!(ax, (0, 1.))
-    elseif occursin("L", mesh_filename)
-        xlims!(ax, (-1, 1.)) 
-        ylims!(ax, (-1, 1.))
+        Colorbar(fig[1, 2 * k], limits = (minimum(u), maximum(u)), 
+                 colormap = :hsv,
+                 size = 10,  height = Relative(3/4))
+        if occursin("square", mesh_filename)
+            xlims!(ax, (0, 1.)) 
+            ylims!(ax, (0, 1.))
+        elseif occursin("L", mesh_filename)
+            xlims!(ax, (-1, 1.)) 
+            ylims!(ax, (-1, 1.))
+        end
     end
     display(Makie.current_figure())
     return
