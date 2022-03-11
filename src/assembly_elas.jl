@@ -27,14 +27,14 @@ function characElt(verts)
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """
-   IK, JK, SK, IF, SF = assembKM_vemKsource_elas(pv, cellsb, rhs, 
-                                                 boundary_condition,
-                                                 meshboundary)
+   IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cellsb, rhs, 
+                                                   boundary_condition,
+                                                   meshboundary)
 
 Assemble stiffness and source terms of virtual element approach
 """
-function assembKM_vemKsource_elas(pv, cellsb, rhs, boundary_condition,
-                                  meshboundary)
+function assembKM_vemKsource_elas2D(pv, cellsb, rhs, boundary_condition,
+                                    meshboundary)
     # material parameters
     lm = 0.5769
     mu = 0.3846
@@ -183,16 +183,17 @@ function assembKM_vemKsource_elas(pv, cellsb, rhs, boundary_condition,
 end
 #-------------------------------------------------------------------------------
 """
-    u, p, t, meshboundary = vem_elas(filename::String = "squarepolmesh_coarse",
-                                     nc::Int64 = 1_00;
-                                     resolution::Int64 = 400)
+    u, p, t, meshboundary = vem_elas2D(filename::String =    
+                                                         "squarepolmesh_coarse",
+                                       nc::Int64 = 1_00;
+                                       resolution::Int64 = 400)
 
 N.B. 
 * nc = 100, 1_000 or 10_000
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
-function vem_elas(filename::String = "Lpolmesh", nc::Int64 = 1_00;
-                  resolution::Int64 = 400)
+function vem_elas2D(filename::String = "Lpolmesh", nc::Int64 = 1_00;
+                    resolution::Int64 = 400)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
@@ -210,13 +211,23 @@ function vem_elas(filename::String = "Lpolmesh", nc::Int64 = 1_00;
         EPS = 1e-4
         rhs_L_elas, boundary_condition_L_elas, findall(pv[:, 2] .> (1 - EPS))
     end
-    n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
-    n_dofs *= 2    
-    u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource_elas(pv, cellsb, rhs,
-                                                  boundary_condition, 
-                                                  meshboundary)
+    IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cellsb, rhs,
+                                                    boundary_condition, 
+                                                    meshboundary)
+    K, F, internal_dofs, u = solve_elas2D(IK, JK, SK, IF, SF, pv, meshboundary, 
+                                          boundary_condition)
+    # plot
+    if resolution > 0
+        plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
+                     resolution = resolution)
+    end
+    return u, pv, t, meshboundary
+end
+#-------------------------------------------------------------------------------
+function solve_elas2D(IK, JK, SK, IF, SF, pv, meshboundary, boundary_condition)
+    n_dofs = 2 * size(pv, 1)   
+    u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
     nb = length(meshboundary)
@@ -228,10 +239,5 @@ function vem_elas(filename::String = "Lpolmesh", nc::Int64 = 1_00;
     # solve
     u[internal_dofs] = K[internal_dofs, internal_dofs] \ F[internal_dofs] 
     u[Vmeshboundary] .= Vboundary_vals # set the boundary values
-    # plot
-    if resolution > 0
-        plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
-                     resolution = resolution)
-    end
-    return u, pv, t, meshboundary
+    return K, F, internal_dofs, u
 end
