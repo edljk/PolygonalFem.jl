@@ -32,8 +32,10 @@ function plotsolution(uin, p, cellsb;
                  length = 64)
     colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)]
     dim = length(uin) ÷ size(p, 1)
+    axlist = Any[]
     for k = 1:dim 
         ax = L = GLMakie.Axis(fig[1, 2 * k - 1])
+        push!(axlist, ax)
         ax.aspect = GLMakie.DataAspect()
         u, title = if dim == 1
             uin, ""
@@ -61,6 +63,9 @@ function plotsolution(uin, p, cellsb;
             xlims!(ax, (-1, 1.)) 
             ylims!(ax, (-1, 1.))
         end
+    end
+    if dim > 1
+        Main.Makie.linkaxes!(axlist...)
     end
     display(Makie.current_figure())
     return
