@@ -1,4 +1,3 @@
-
 function plotunicode_points(p)
     show(UnicodePlots.scatterplot(p[:, 1], p[:, 2], 
                                   marker = :diamond))
