@@ -18,3 +18,5 @@ test/data/cubepolmesh_lesscoarse_10000.jld2
 test/data/icopolmesh_coarse_10000.jld2
 
 test/data/icopolmesh_lesscoarse_10000.jld2
+
+test/data/icopolmesh_10000.jld2
