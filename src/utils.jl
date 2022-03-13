@@ -1,11 +1,9 @@
-
-const pyspatial = try 
-    pyimport("scipy.spatial")
-catch
-    println("no spatial scipy (for 3D voronoi plots)")
+const pyspatial = PyNULL()
+function __init__()
+    copy!(pyspatial,  pyimport("scipy.spatial"))
 end
 # is scipy available?
-const scipy = :pyspatial ∈ names(PolygonalFem, all = true, imported = true) ? true : false
+const scipy = pyspatial == PyNULL() ? false : true
 #-------------------------------------------------------------------------------
 function edgestoloop(el::Array{Int64, 2})
     elcol = reshape(el, length(el), 1)
