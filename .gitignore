@@ -12,3 +12,5 @@ test/data/cubepolmesh_10000.jld2
 test/data/cubepolmesh_coarse_10000.jld2
 
 test/data/barpolmesh_lesscoarse_10000.jld2
+
+test/data/cubepolmesh_lesscoarse_10000.jld2
