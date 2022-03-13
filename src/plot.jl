@@ -49,18 +49,16 @@ function plotsolution3D(uin, p, cellsb;
     for k = 1:np
         Ik = unique(cellsb[k][:])
         pk = p[Ik, :]
-        t = Main.convexhull(pk)[1]
-        if scipy 
-            fG = convexhull_3Dfaces(pk)[1]
-            for l = 1:length(fG)
-                for m = 1:length(fG[l])
-                    if m == 1
-                        push!(pts_wire, pk[fG[l][1], :])
-                        push!(pts_wire, pk[fG[l][end], :])
-                    else
-                        push!(pts_wire, pk[fG[l][m - 1], :])
-                        push!(pts_wire, pk[fG[l][m], :])
-                    end
+        t = convexhull(pk)[1]
+        fG = convexhull_3Dfaces(pk)[1]
+        for l = 1:length(fG)
+            for m = 1:length(fG[l])
+                if m == 1
+                    push!(pts_wire, pk[fG[l][1], :])
+                    push!(pts_wire, pk[fG[l][end], :])
+                else
+                    push!(pts_wire, pk[fG[l][m - 1], :])
+                    push!(pts_wire, pk[fG[l][m], :])
                 end
             end
         end
@@ -69,7 +67,7 @@ function plotsolution3D(uin, p, cellsb;
         pG =  [Point3f0(pk[l, 1], pk[l, 2], pk[l, 3]) for l = 1:size(pk, 1)]
         push!(m, normal_mesh(copy(pG), copy(tG)))
     end
-    if wireframe && scipy # add edges of polygons 
+    if wireframe  # add edges of polygons 
         npw = length(pts_wire)
         x = [pts_wire[k][1] for k = 1:npw]
         y = [pts_wire[k][2] for k = 1:npw]
@@ -96,7 +94,7 @@ function plotsolution3D(uin, p, cellsb;
         colors = false ? [RGBA(rand(3)..., alphac) for _ = 1:np] : [il(mean(u[cellsb[l]])) for l = 1:np]
         Makie.mesh!(L, m, color = colors, shading = false)
         ax.aspect = :data
-        if wireframe && scipy # add edges of polygons 
+        if wireframe  # add edges of polygons 
             Makie.linesegments!(L, x, y, z, color = :black)
         end
         Colorbar(fig[1, 2 * k], limits = (minimum(u), maximum(u)), 
@@ -111,6 +109,9 @@ function plotsolution(uin, p, cellsb;
                       resolution::Int64 = 400,  wireframe::Bool = false,
                       mesh_filename::String = "")
     if size(p, 2) == 3
+        if !scipy
+            error("3D plots only available if scipy is installed in conda..")
+        end
         plotsolution3D(uin, p, cellsb, resolution = resolution, 
                        mesh_filename = mesh_filename, wireframe = wireframe)
         return
