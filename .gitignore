@@ -4,3 +4,9 @@
 /Manifest.toml
 
 test/data/barpolmesh_10000.jld2
+
+test/data/barpolmesh_coarse_10000.jld2
+
+test/data/cubepolmesh_10000.jld2
+
+test/data/cubepolmesh_coarse_10000.jld2
