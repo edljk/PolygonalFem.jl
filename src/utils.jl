@@ -1,9 +1,11 @@
 const pyspatial = PyNULL()
+scipy = false
 function __init__()
     copy!(pyspatial,  pyimport("scipy.spatial"))
+    # is scipy available?
+    global scipy = pyspatial == PyNULL() ? false : true
+    return
 end
-# is scipy available?
-const scipy = pyspatial == PyNULL() ? false : true
 #-------------------------------------------------------------------------------
 function edgestoloop(el::Array{Int64, 2})
     elcol = reshape(el, length(el), 1)
