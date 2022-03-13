@@ -72,10 +72,11 @@ function plotsolution3D(uin, p, cellsb;
         y = [pts_wire[k][2] for k = 1:npw]
         z = [pts_wire[k][3] for k = 1:npw]
     end
-
     # plot 
+    axlist = Any[]
     for k = 1:dim 
         ax = L = GLMakie.Axis3(fig[1, 2 * k - 1])
+        push!(axlist, ax)
         u, title = if dim == 1
             uin, ""
         elseif k == 1
@@ -99,6 +100,9 @@ function plotsolution3D(uin, p, cellsb;
         Colorbar(fig[1, 2 * k], limits = (minimum(u), maximum(u)), 
                  colormap = :hsv,
                  size = 10,  height = Relative(3/4))
+    end
+    if dim > 1
+    #    Main.Makie.linkaxes!(axlist...)
     end
     display(fig)
     return

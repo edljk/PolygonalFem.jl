@@ -16,6 +16,8 @@ function _genpolmeshes(; numb::Int64 = 2,
         "bar"
     elseif dim == 3 && numb == 3
         "cube"
+    elseif dim == 3 && numb == 6
+        "ico"
     end  
     # gen regular polygonal meshes using Lloyd
     for itmax ∈ nbit
