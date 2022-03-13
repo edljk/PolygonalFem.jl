@@ -2,3 +2,5 @@
 *.jl.cov
 *.jl.mem
 /Manifest.toml
+
+test/data/barpolmesh_10000.jld2

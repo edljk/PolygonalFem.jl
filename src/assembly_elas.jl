@@ -50,7 +50,7 @@ function assembKM_vemKsource_elas2D(pv, cellsb, rhs, boundary_condition,
     end
     # a utility function for wrapping around a vector
     mod_wrap(x, a) = mod(x - 1, a) + 1 
-    # (3*3) matrix D of elasticity over constant strain fields
+    # (3 * 3) matrix D of elasticity over constant strain fields
     Di = [ (2.0 * mu + lm)              lm         0.0;
                        lm   (2.0 * mu + lm)        0.0;
                       0.0              0.0    4.0 * mu]
@@ -62,19 +62,18 @@ function assembKM_vemKsource_elas2D(pv, cellsb, rhs, boundary_condition,
         # start computing the geometric information
         vol, bar, diameter = characElt(vc) 
         D = vol * Di
-        # basis functions for R = [  (1,0)  ,  (0,1)  , (-(x_1-bar1,x_0-bar0)) ]
-        # basis functions for C = [ (x_0-bar0,0) , (0,x_1-bar1) ,(x_1-bar1, 
-        #                            x_0-bar0)  ]
+        # basis functions for R = [(1,0), (0,1)  , (-(y-bary, x-barx)) ]
+        # basis functions for C = [(x-barx, 0), (0,y-bary) ,(y-bary, x-barx)]
         # (2n*3) Matrix WC of components of basis functions over constant  
         # strain fields
         WC = zeros(typein, 2 * na, 3)
         # (2n*3) Matrix WR of components of basis functions over rigid-body 
         # motions
         WR = zeros(typein, 2 * na, 3)
-        # (2n*3) matrix NC: (NC)_{2i,l} = (c_k(x_i))_0, (NC)_{2i+1,l} = 
+        # (2n*3) matrix NC: (NC)_{2i - 1,l} = (c_k(x_i))_0, (NC)_{2i,l} = 
         # (c_k(x_i))_1
         NC = zeros(typein, 2 * na, 3)
-        # (2n*3) matrix NR: (NR)_{2i,l} = (r_k(x_i))_0, (NR)_{2i+1,l} = 
+        # (2n*3) matrix NR: (NR)_{2i - 1,l} = (r_k(x_i))_0, (NR)_{2i,l} = 
         # (r_k(x_i))_1
         NR = zeros(typein, 2 * na, 3)
         for i = 1:na

@@ -4,13 +4,18 @@
 function _genpolmeshes(; numb::Int64 = 2, 
                          nbit::Union{Vector{Int64}, Int64} = [100,],
                          np::Union{Vector{Int64}, Int64} = [100, 1_000, 10_000],
-                         drawvoronoi::Bool = false)
-    support = if numb == 2
+                         drawvoronoi::Bool = false,
+                         dim::Int64 = 2)
+    support = if dim == 2 && numb == 2
         "square"
-    elseif numb == 4
+    elseif dim == 2 && numb == 4
         "flower"
-    elseif numb == 9
+    elseif dim == 2 && numb == 9
         "L"
+    elseif dim == 3 && numb == 1
+        "bar"
+    elseif dim == 3 && numb == 3
+        "cube"
     end  
     # gen regular polygonal meshes using Lloyd
     for itmax ∈ nbit
@@ -23,7 +28,7 @@ function _genpolmeshes(; numb::Int64 = 2,
         end
         for npl ∈ np
             # WARNING function not available (only for local use)
-            p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, 
+            p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, dim = dim,
                           drawvoronoi = drawvoronoi)
             # save 
             mesh_filename = "$(@__DIR__)/../test/data/$(support)polmesh$(strit)_$(npl).jld2"
