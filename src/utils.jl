@@ -81,7 +81,7 @@ function convexhull_3Dfaces(p::Array{Float64, 2},
             Ik = unique(Tri[tk, :][:])
             Minv = inv(M)
             p2D = copy((Minv * p[Ik, :]')'[:, 1:2])
-            push!(faces, Ik[Main.edgestoloop(convexhull(p2D)[1])])
+            push!(faces, Ik[edgestoloop(convexhull(p2D)[1])])
         end
     end
     return faces, pyhull
