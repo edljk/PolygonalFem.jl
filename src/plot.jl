@@ -24,7 +24,7 @@ function plotmesh(filename::String = "Lpolmesh", nc::Int64 = 1_00;
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
     u = if dimplot 
-        pv[:]
+        pv'[:]
     else 
         pv[:, end]
     end
