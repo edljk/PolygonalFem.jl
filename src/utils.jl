@@ -69,6 +69,9 @@ function convexhull_3Dfaces(p::Array{Float64, 2},
         if length(tk) == 1 # triangular face
             push!(faces, Tri[tk[1], :])
         else # polygonal face
+            #=
+            @time begin 
+            println("old plan faces")
             n = eq[tk[1], 1:3]
             # project to planar configuration
             M[:, 3] .= n 
@@ -80,8 +83,20 @@ function convexhull_3Dfaces(p::Array{Float64, 2},
             M[:, 1] .= cross(M[:, 2], M[:, 3])
             Ik = unique(Tri[tk, :][:])
             Minv = inv(M)
-            p2D = copy((Minv * p[Ik, :]')'[:, 1:2])
+            p2D = copy((Minv * p[Ik, :]')'[:, 1:2])         
             push!(faces, Ik[edgestoloop(convexhull(p2D)[1])])
+            end
+            =#
+            #@time begin 
+            #println("new plan faces")
+            e = sort(vcat(Tri[tk, [1, 2]], Tri[tk, [1, 3]], Tri[tk, [2, 3]]),
+                     dims = 2)
+            J = groupslices(e, dims = 1)
+            # only one edge
+            Vu = sparsevec(J, ones(Int64, length(J)))
+            Ie = findall(Vu .== 1)
+            push!(faces, edgestoloop(e[Ie, :]))
+            #end            
         end
     end
     return faces, pyhull
