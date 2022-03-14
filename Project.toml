@@ -23,6 +23,7 @@ UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 [compat]
 GroupSlices = "≥ 0.0.3"
 Makie = "≥ 0.15"
+PyCall = "1"
 julia = "≥ 1.7"
 
 [extras]
