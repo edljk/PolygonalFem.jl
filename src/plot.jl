@@ -23,8 +23,8 @@ function plotmesh(filename::String = "Lpolmesh", nc::Int64 = 1_00;
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
     JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
-    u = if dimplot
-        pv'[:]
+    u = if dimplot 
+        pv[:]
     else 
         pv[:, end]
     end
@@ -91,7 +91,7 @@ function plotsolution3D(uin, p, cellsb;
         end
         xu = range(minimum(u), stop = maximum(u), length = length(colS))
         il = LinearInterpolation(xu, colmapS)
-        colors = false ? [RGBA(rand(3)..., alphac) for _ = 1:np] : [il(mean(u[cellsb[l]])) for l = 1:np]
+        colors = dim == 1 ? [RGBA(rand(3)..., alphac) for _ = 1:np] : [il(mean(u[cellsb[l]])) for l = 1:np]
         Makie.mesh!(L, m, color = colors, shading = false)
         ax.aspect = :data
         if wireframe  # add edges of polygons 
