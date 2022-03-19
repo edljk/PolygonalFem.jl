@@ -27,13 +27,13 @@ function characElt(verts)
 end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """
-   IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cellsb, rhs, 
+   IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cells, rhs, 
                                                    boundary_condition,
                                                    meshboundary)
 
 Assemble stiffness and source terms of virtual element approach
 """
-function assembKM_vemKsource_elas2D(pv, cellsb, rhs, boundary_condition,
+function assembKM_vemKsource_elas2D(pv, cells, rhs, boundary_condition,
                                     meshboundary)
     # material parameters
     lm = 0.5769
@@ -54,9 +54,9 @@ function assembKM_vemKsource_elas2D(pv, cellsb, rhs, boundary_condition,
     Di = [ (2.0 * mu + lm)              lm         0.0;
                        lm   (2.0 * mu + lm)        0.0;
                       0.0              0.0    4.0 * mu]
-    for el_id = 1:length(cellsb)
-        #println(cellsb[el_id])
-        v = cellsb[el_id]      # global indices of the vertices of el 
+    for el_id = 1:length(cells)
+        #println(cells[el_id])
+        v = cells[el_id]      # global indices of the vertices of el 
         vc = pv[v, :]   # na * 2 array of vertices coordinates
         na = length(v)  
         # start computing the geometric information
@@ -192,17 +192,16 @@ N.B.
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
 function vem_elas2D(filename::String = "Lpolmesh", nc::Int64 = 1_00;
-                    resolution::Int64 = 400)
+                    resolution::Int64 = 400, visible::Bool = false)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
-    #                + cellsb   : polygonal cells (⚠ orientation is crucial)
-    #                + celssbt  : triangulated cells 
-    #                + t        : all triangles 
+    #                + cells    : polygonal cells (⚠ orientation is crucial)
     #                + (pb, tb) : restricted delaunay mesh 
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
-    JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
+    JLD2.@load(mesh_filename, ps, Iv, pv, bbelem, elem, pb, tb) 
+    cells, bcells = bbelem, bbelem
     # boundary points / rhs  
     rhs, boundary_condition, meshboundary = if occursin("square", mesh_filename)
         rhs_sqr_elas, boundary_condition_sqr_elas, []
@@ -211,17 +210,18 @@ function vem_elas2D(filename::String = "Lpolmesh", nc::Int64 = 1_00;
         rhs_L_elas, boundary_condition_L_elas, findall(pv[:, 2] .> (1 - EPS))
     end
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cellsb, rhs,
+    IK, JK, SK, IF, SF = assembKM_vemKsource_elas2D(pv, cells, rhs,
                                                     boundary_condition, 
                                                     meshboundary)
     K, F, internal_dofs, u = solve_elas2D(IK, JK, SK, IF, SF, pv, meshboundary, 
                                           boundary_condition)
     # plot
     if resolution > 0
-        plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
-                     resolution = resolution)
+        Iv = visible ? Iv : 1:length(cells)
+        plotsolution(u, pv, cells, bcells, Iv, ps,
+                     mesh_filename = mesh_filename, resolution = resolution)
     end
-    return u, pv, t, meshboundary
+    return nothing 
 end
 #-------------------------------------------------------------------------------
 function solve_elas2D(IK, JK, SK, IF, SF, pv, meshboundary, boundary_condition)

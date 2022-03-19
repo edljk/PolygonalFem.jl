@@ -1,6 +1,7 @@
 module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
+using NearestNeighbors
 using ReverseDiff, CoordinateTransformations, Interpolations
 using ReverseDiff: GradientTape, GradientConfig, gradient, gradient!, compile
 using FileIO, JLD2, GeometryBasics, Makie, GLMakie, Colors, PyCall
@@ -28,17 +29,19 @@ N.B.
 * adapted code from the article / matlab's code  "The virtual element method in 50 lines of matlab". See https://arxiv.org/pdf/1604.06021.pdf
 """
 function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
-             resolution::Int64 = 400)
+             resolution::Int64 = 400, visible::Bool = false)
     # computes the virtual element solution of the Poisson problem on 
     # the specified mesh
     # load the mesh  + pv       : vertices of the cells 
-    #                + cellsb   : polygonal cells (⚠ orientation is crucial)
-    #                + celssbt  : triangulated cells 
-    #                + t        : all triangles 
+    #                + cells    : polygonal cells (⚠ orientation is crucial)
+    #                + elem     : triangulated cells 
     #                + (pb, tb) : restricted delaunay mesh 
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
-    JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
+    JLD2.@load(mesh_filename, ps, Iv, pv, bbelem, elem, pb, tb) 
+    cells, bcells = bbelem, bbelem
+    # all triangles 
+    t = vcat(elem...)
     # boundary points / rhs  
     rhs, boundary_condition = if occursin("square", mesh_filename)
         rhs_sqr, boundary_condition_sqr
@@ -50,7 +53,7 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     meshboundary = unique(btri(t)[:])
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     # call assemble function
-    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cellsb, rhs,
+    IK, JK, SK, IF, SF = assembKM_vemKsource(pv, cells, rhs,
                                              boundary_condition, meshboundary)
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     F = Vector(sparsevec(IF, SF, n_dofs))
@@ -62,8 +65,9 @@ function vem(filename::String = "squarepolmesh_coarse", nc::Int64 = 1_00;
     u[meshboundary] .= boundary_vals # set the boundary values
     # plot
     if resolution > 0
-        plotsolution(u, pv, cellsb, mesh_filename = mesh_filename,
-                     resolution = resolution)
+        Iv = visible ? Iv : 1:length(cells)
+        plotsolution(u, pv, cells, bcells, Iv, ps, 
+                     mesh_filename = mesh_filename, resolution = resolution)
     end
     return u, pv, t, meshboundary
 end

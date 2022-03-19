@@ -6,7 +6,9 @@ function _genpolmeshes(; numb::Int64 = 2,
                          np::Union{Vector{Int64}, Int64} = [100, 1_000, 10_000],
                          drawvoronoi::Bool = false,
                          dim::Int64 = 2)
-    support = if dim == 2 && numb == 2
+    support = if dim == 1 && numb == 2
+        "disk"
+    elseif dim == 2 && numb == 2
         "square"
     elseif dim == 2 && numb == 4
         "flower"
@@ -30,16 +32,32 @@ function _genpolmeshes(; numb::Int64 = 2,
         end
         for npl ∈ np
             # WARNING function not available (only for local use)
-            p, pv, cellsb, cellsbt, t, pc, pb, tb = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, dim = dim,
+            c = Main.ConvexTools.lloyd_geogram(npl, numb = numb, nbit = itmax, dim = dim,
                           drawvoronoi = drawvoronoi)
             # save 
             mesh_filename = "$(@__DIR__)/../test/data/$(support)polmesh$(strit)_$(npl).jld2"
             println(mesh_filename)
-            JLD2.save(mesh_filename, "pv", pv, "cellsb", cellsb, 
-                      "cellsbt", cellsbt, "pb", pb, "tb", tb, "t", t)
+            JLD2.save(mesh_filename, "ps", c.ps, "pv", c.pv, "elem", c.elem, 
+                      "bbelem", c.bbelem, "pb", c.pb, "tb", c.boxelem, 
+                      "Iv", c.Iv, "centroids", c.centroids, "measures", c.measures)
         end
     end
     nothing
+end
+function _genallpolmeshes()
+    nbit = [1, 100, 1_000] 
+    np = [100, 1_000, 10_000]
+    dimnum = [(2, 2), (2, 4), (2, 9), (3, 1), (3, 3), (3, 6)]
+    for it ∈ nbit 
+        for nn ∈ np 
+            for v ∈ dimnum
+                dim, numb = v
+                _genpolmeshes(numb = numb, dim = dim, nbit = it, 
+                              drawvoronoi = false, np = nn)
+            end
+        end
+    end
+    nothing 
 end
 #-------------------------------------------------------------------------------
 """

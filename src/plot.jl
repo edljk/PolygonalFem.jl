@@ -18,46 +18,68 @@ function plotunicode(U;
     return nothing 
 end
 #-------------------------------------------------------------------------------
+"""
+   
+   plotmesh(filename::String = "Lpolmesh", nc::Int64 = 1_00;
+            dimplot::Bool = true, alphac::Float64 = 0.9,  
+            visible::Bool = false, cut::Int64 = 0)
+"""
 function plotmesh(filename::String = "Lpolmesh", nc::Int64 = 1_00;
-                  dimplot::Bool = true)
+                  dimplot::Bool = true, alphac::Float64 = 0.9,  
+                  visible::Bool = true, cut::Int64 = 0,
+                  randomcolors::Bool = !dimplot)
     mesh_filename = "$(@__DIR__)/../test/data/$(filename)_$(nc).jld2"
     println("read file $(mesh_filename)")
-    JLD2.@load(mesh_filename, pv, cellsb, cellsbt, t, pb, tb) 
+    JLD2.@load(mesh_filename, ps, pv, elem, bbelem, Iv, pb, tb) 
     u = if dimplot 
         pv'[:]
     else 
         pv[:, end]
     end
-    plotsolution(u, pv, cellsb, wireframe = true)
+    dim = size(ps, 2)
+    cells = dim == 2 ? bbelem : elem
+    bcells = bbelem
+    if !visible 
+        Iv = 1:size(ps, 1)
+    end
+    if cut > 0
+        Iv = intersect(Iv, findall((ps .- mean(pv, dims = 1))[:, cut] .> 0))
+    end
+    plotsolution(u, pv, cells, bcells, Iv, ps, wireframe = true, 
+                 visible = visible,
+                 alphac = alphac, randomcolors = randomcolors)
     nothing
 end
 #-------------------------------------------------------------------------------
-function plotsolution3D(uin, p, cellsb;
-                        wireframe::Bool = false,
-                        alphac::Float64 = 0.9, 
+function plotsolution3D(uin, pv, cells, bcells, Iv, ps;
+                        wireframe::Bool = false, randomcolors::Bool = false,
+                        alphac::Float64 = 0.9, visible::Bool = false,
                         resolution::Int64 = 400, mesh_filename::String = "")
-    np, m = length(cellsb), GeometryBasics.Mesh[] 
+    np, m = length(cells), GeometryBasics.Mesh[] 
     GLMakie.destroy!(GLMakie.global_gl_screen())
     colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
                  length = 64)
     colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)] 
-    dim = length(uin) ÷ size(p, 1)
+    dim = length(uin) ÷ size(pv, 1)
     fig = GLMakie.Figure(resolution = (dim * resolution, resolution)) 
     println("build meshes in plotsolution3D")
     pts_wire = Vector{Vector{Float64}}()
-    for k = 1:np
-        Ik = unique(cellsb[k][:])
-        pk = p[Ik, :]
+    for k ∈ Iv #1:np
+        Ik = unique(cells[k][:])
+        pk = pv[Ik, :]
         t = convexhull(pk)[1]
-        fG = convexhull_3Dfaces(pk)[1]
-        for l = 1:length(fG)
-            for m = 1:length(fG[l])
-                if m == 1
-                    push!(pts_wire, pk[fG[l][1], :])
-                    push!(pts_wire, pk[fG[l][end], :])
-                else
-                    push!(pts_wire, pk[fG[l][m - 1], :])
-                    push!(pts_wire, pk[fG[l][m], :])
+        if wireframe
+            fG = bcells[k]
+            #fG = convexhull_3Dfaces(pk)[1]            
+            for l = 1:length(fG)
+                for m = 1:length(fG[l])
+                    if m == 1
+                        push!(pts_wire, pk[fG[l][1], :])
+                        push!(pts_wire, pk[fG[l][end], :])
+                    else
+                        push!(pts_wire, pk[fG[l][m - 1], :])
+                        push!(pts_wire, pk[fG[l][m], :])
+                    end
                 end
             end
         end
@@ -91,8 +113,10 @@ function plotsolution3D(uin, p, cellsb;
         end
         xu = range(minimum(u), stop = maximum(u), length = length(colS))
         il = LinearInterpolation(xu, colmapS)
-        colors = dim == 1 ? [RGBA(rand(3)..., alphac) for _ = 1:np] : [il(mean(u[cellsb[l]])) for l = 1:np]
+        colors = randomcolors ? [RGBA(rand(3)..., alphac) for _ ∈ Iv] : [il(mean(u[cells[l]])) for l ∈ Iv]
         Makie.mesh!(L, m, color = colors, shading = false)
+        #Makie.scatter!(L, p[Ipv, 1], p[Ipv, 2], p[Ipv, 3], markersize = 5_000)
+        #Makie.scatter!(L, p[Iv, 1], p[Iv, 2], p[Iv, 3], markersize = 5_000)
         ax.aspect = :data
         if wireframe  # add edges of polygons 
             Makie.linesegments!(L, x, y, z, color = :black)
@@ -108,30 +132,34 @@ function plotsolution3D(uin, p, cellsb;
     return
 end
 #-------------------------------------------------------------------------------
-function plotsolution(uin, p, cellsb;
+function plotsolution(uin, pv, cells, bcells, Iv, ps;
+                      alphac::Float64 = 0.9, visible::Bool = false,
                       resolution::Int64 = 400,  wireframe::Bool = false,
+                      randomcolors::Bool = false,
                       mesh_filename::String = "")
-    if size(p, 2) == 3
+    if size(pv, 2) == 3
         if !scipy
             error("3D plots only available if scipy is installed in conda..")
         end
-        plotsolution3D(uin, p, cellsb, resolution = resolution, 
-                       mesh_filename = mesh_filename, wireframe = wireframe)
+        plotsolution3D(uin, pv, cells, bcells, Iv, ps, resolution = resolution, 
+                       alphac = alphac, mesh_filename = mesh_filename, 
+                       wireframe = wireframe, visible = visible,
+                       randomcolors = randomcolors)
         return
     end
     GLMakie.destroy!(GLMakie.global_gl_screen())
-    dim = length(uin) ÷ size(p, 1)
+    dim = length(uin) ÷ size(pv, 1)
     fig = GLMakie.Figure(resolution = (dim * resolution, resolution)) 
     P = Polygon[]
-    for k = 1:length(cellsb)
-        cc = [cellsb[k]..., cellsb[k][1]]
-        push!(P, Polygon([Point2(p[m, 1], 
-                                 p[m, 2]) for m ∈ cc])) # u[m]
+    for k ∈ Iv
+        cc = [cells[k]..., cells[k][1]]
+        push!(P, Polygon([Point2(pv[m, 1], 
+                                 pv[m, 2]) for m ∈ cc])) # u[m]
     end
     colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
                  length = 64)
     colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)]
-    dim = length(uin) ÷ size(p, 1)
+    dim = length(uin) ÷ size(pv, 1)
     axlist = Any[]
     for k = 1:dim 
         ax = L = GLMakie.Axis(fig[1, 2 * k - 1])
@@ -149,13 +177,14 @@ function plotsolution(uin, p, cellsb;
         end
         xu = range(minimum(u), stop = maximum(u), length = length(colS))
         il = LinearInterpolation(xu, colmapS)
+        colors = randomcolors ? [RGBA(rand(3)..., alphac) for _ ∈ Iv] : [il(mean(u[cells[l]])) for l ∈ Iv]
         Makie.poly!(ax, P, 
                     strokecolor = :black, strokewidth = 2., 
-                    color = [il(mean(u[cellsb[k]])) for k = 1:length(P)])
-    
+                    color = colors) 
         Colorbar(fig[1, 2 * k], limits = (minimum(u), maximum(u)), 
                  colormap = :hsv,
                  size = 10,  height = Relative(3/4))
+        #Makie.scatter!(L, ps[Iv, 1], ps[Iv, 2], markersize = 10)
         if occursin("square", mesh_filename)
             xlims!(ax, (0, 1.)) 
             ylims!(ax, (0, 1.))

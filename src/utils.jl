@@ -51,57 +51,6 @@ function convexhull(p::Array{Float64, 2}, qhull_option::String = "QJ Pp")
     return Tri, pyhull
 end
 #-------------------------------------------------------------------------------
-function convexhull_3Dfaces(p::Array{Float64, 2}, 
-                            preci::Int64 = 6,
-                            qhull_option::String = "QJ Pp")
-    if size(p, 2) != 3
-        error("convexhull_3Dfaces relevant only in dimension 3..")
-    end
-    Tri, pyhull = convexhull(p, qhull_option) 
-    Tri = convert(Array{Int64, 2}, pyhull.simplices) .+ 1
-    eq = pyhull.equations # triangular faces equations
-    _, Iu, Ju = uniquerows(eq, preci)
-    # reconstruct faces 
-    faces = Vector{Vector{Int64}}()
-    M = zeros(3, 3)
-    for k ∈ unique(Ju)
-        tk = findall(Ju .== k)
-        if length(tk) == 1 # triangular face
-            push!(faces, Tri[tk[1], :])
-        else # polygonal face
-            #=
-            @time begin 
-            println("old plan faces")
-            n = eq[tk[1], 1:3]
-            # project to planar configuration
-            M[:, 3] .= n 
-            if maximum(abs.(n[1:2])) > 1e-8
-                M[:, 2] .= [- n[2], n[1], 0.]
-            else
-                M[:, 2] .= [0., - n[3], n[2]]
-            end
-            M[:, 1] .= cross(M[:, 2], M[:, 3])
-            Ik = unique(Tri[tk, :][:])
-            Minv = inv(M)
-            p2D = copy((Minv * p[Ik, :]')'[:, 1:2])         
-            push!(faces, Ik[edgestoloop(convexhull(p2D)[1])])
-            end
-            =#
-            #@time begin 
-            #println("new plan faces")
-            e = sort(vcat(Tri[tk, [1, 2]], Tri[tk, [1, 3]], Tri[tk, [2, 3]]),
-                     dims = 2)
-            J = groupslices(e, dims = 1)
-            # only one edge
-            Vu = sparsevec(J, ones(Int64, length(J)))
-            Ie = findall(Vu .== 1)
-            push!(faces, edgestoloop(e[Ie, :]))
-            #end            
-        end
-    end
-    return faces, pyhull
-end
-#-------------------------------------------------------------------------------
 """
     Au, Iu, Ju = uniquerows(A::AbstractArray{T}, preci::Int64 = 6)
 Matlab like unique_rows function
