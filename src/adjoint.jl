@@ -161,3 +161,57 @@ function prodgrad_elas2D(pv, cellsb, t, rhs, boundary_condition,
     end
     return val
 end
+#-------------------------------------------------------------------------------
+function costeigs2D(pvin, cellsb, boundary_condition, meshboundary, numeig)
+    # copy coordinates
+    pv = reshape(pvin, length(pvin) ÷ 2, 2)
+    # call assemble function
+    IK, JK, SK, IM, JM, SM = assembKM_vemKM(pv, cellsb)
+    # compute eigenvalues
+    K, M, internal_dofs, u, Uu, λ = solve_eigs(IK, JK, SK, IM, JM, SM, pv,
+                                               meshboundary, boundary_condition,
+                                               numeig)
+    return λ[numeig]
+end
+#-------------------------------------------------------------------------------
+function ∇costeigs2D(pvin, cellsb, boundary_condition, meshboundary, numeig)
+    # copy coordinates
+    pv = reshape(pvin, length(pvin) ÷ 2, 2)
+    n_dofs = size(pv, 1)   
+    # call assemble function
+    # call assemble function
+    IK, JK, SK, IM, JM, SM = assembKM_vemKM(pv, cellsb)
+    M = sparse(IM, JM, SM, n_dofs, n_dofs) 
+    # compute eigenvalues
+    K, M, internal_dofs, u, Uu, λ = solve_eigs(IK, JK, SK, IM, JM, SM, pv,
+                                       meshboundary, boundary_condition, numeig)
+    n_dofs = length(u)
+    # compute full gradient by automatic differentiation
+    fprod(x) = prodgrad_eigs2D(x, cellsb, boundary_condition, meshboundary,
+                               u, λ[numeig])
+    ∇prodgrad = ReverseDiff.gradient(fprod, pv) / (u' * M * u)
+    # gradient contribution of boundary points
+    #fboundary(x) = sum(boundary_condition(x[meshboundary, :]) .^ 2) / n_dofs
+    #∇Dirichlet = ReverseDiff.gradient(fboundary, pv)
+    return ∇prodgrad #+ ∇Dirichlet
+end
+#-------------------------------------------------------------------------------
+function prodgrad_eigs2D(pv, cellsb, boundary_condition,  meshboundary, u, λ)
+    # assemble matrices
+    IK, JK, SK, IM, JM, SM = assembKM_vemKM(pv, cellsb)
+    valK, valM = 0., 0.
+    # boundary dofs
+    #=
+    Vmeshboundary = vcat(2 * meshboundary .- 1, 2 * meshboundary)
+    Jinmesh = indexin(JK, Vmeshboundary)
+    Jboundary = findall(Jinmesh .!= nothing)
+    SK[Jboundary] .= 0.
+    =#
+    for (i, j, s) ∈ zip(IK, JK, SK)
+        valK += u[i] * s * u[j] 
+    end
+    for (i, j, s) ∈ zip(IM, JM, SM)
+        valM += u[i] * s * u[j] 
+    end
+    return valK - λ * valM
+end

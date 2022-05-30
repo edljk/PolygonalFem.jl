@@ -1,6 +1,6 @@
 using Test, JLD2, LinearAlgebra
 #
-# gradient computation by parial automatic differentiation and adjoint merthods 
+# gradient computation by parial automatic differentiation and adjoint methods 
 # of 
 #           E(v) = ∫ |U(v)|² dx 
 # where 

@@ -18,7 +18,7 @@ function assembKM_vemKM(pv, cellsb)
     end
     # impose an ordering on the linear polynomials
     linear_polynomials = [[0,0], [1,0], [0,1]] 
-    H = zeros(3, 3)
+    H = zeros(typein, 3, 3)
     # a utility function for wrapping around a vector
     mod_wrap(x, a) = mod(x - 1, a) + 1 
     for el_id = 1:length(cellsb)
@@ -58,7 +58,7 @@ function assembKM_vemKM(pv, cellsb)
             end
         end
         # routine to compute H
-        fill!(H, 0.)
+        fill!(H, zero(typein))
         H[1, 1] = area
         for j = 2:3
             for k = 2:3
@@ -171,7 +171,7 @@ function vem_eigs(filename::String = "Lpolmesh", nc::Int64 = 1_00;
     end
     # call assemble function
     IK, JK, SK, IM, JM, SM = assembKM_vemKM(pv, cells)
-    K, F, internal_dofs, u, Uu, λ = solve_eigs(IK, JK, SK, IM, JM, SM, pv,
+    K, M, internal_dofs, u, Uu, λ = solve_eigs(IK, JK, SK, IM, JM, SM, pv,
                                                meshboundary, boundary_condition,
                                                numeig)
     @show round.(λ, digits = 6)
@@ -190,6 +190,8 @@ function solve_eigs(IK, JK, SK, IM, JM, SM, pv, meshboundary,
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
     M = sparse(IM, JM, SM, n_dofs, n_dofs) 
+    #@show maximum(abs.(K - K'))
+    #@show maximum(abs.(M - M'))
     nb = length(meshboundary)
     boundary_vals = [boundary_condition(pv[meshboundary[k], :]) for k = 1:nb]
     # vertices which aren’t on the boundary
