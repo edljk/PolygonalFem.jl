@@ -1,13 +1,14 @@
 module PolygonalFem
 
 using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
-using NearestNeighbors
+using NearestNeighbors, Arpack
 using ReverseDiff, CoordinateTransformations, Interpolations
 using ReverseDiff: GradientTape, GradientConfig, gradient, gradient!, compile
 using FileIO, JLD2, GeometryBasics, Makie, GLMakie, Colors, PyCall
 
 include("assembly.jl")
 include("assembly_elas.jl")
+include("assembly_eigs.jl")
 include("adjoint.jl")
 include("utils.jl")
 include("plot.jl")
