@@ -171,7 +171,7 @@ function costeigs2D(pvin, cellsb, boundary_condition, meshboundary, numeig)
     K, M, internal_dofs, u, Uu, λ = solve_eigs(IK, JK, SK, IM, JM, SM, pv,
                                                meshboundary, boundary_condition,
                                                numeig)
-    return λ[numeig]
+    return λ[numeig], u
 end
 #-------------------------------------------------------------------------------
 function ∇costeigs2D(pvin, cellsb, boundary_condition, meshboundary, numeig)

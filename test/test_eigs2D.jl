@@ -9,7 +9,7 @@ using Test, JLD2, LinearAlgebra
 # 
 
 # load polygonal mesh 
-filename, nc = "Lpolmesh_coarse", 1_000
+filename, nc = "Lpolmesh", 1_000
 mesh_filename = "$(@__DIR__)/data/$(filename)_$(nc).jld2"
 println("read file $(mesh_filename)")
 JLD2.@load(mesh_filename, pv, bbelem) 
@@ -41,7 +41,7 @@ x, dp = pv, 2 * rand(size(pv)...) .- 1
 xp, xm = x .+ ε * dp, x .- ε * dp
 # finite differences
 f = x -> PolygonalFem.costeigs2D(x, cellsb, boundary_condition, meshboundary,
-                                 numeig)
+                                 numeig)[1]
 fp, fm = f(xp), f(xm)
 @time g = PolygonalFem.∇costeigs2D(x, cellsb, boundary_condition, meshboundary, 
                                    numeig)
