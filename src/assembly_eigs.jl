@@ -201,7 +201,7 @@ function solve_eigs(IK, JK, SK, IM, JM, SM, pv, meshboundary,
                   M[internal_dofs, internal_dofs], nev = numeig, which = :LM, 
                   tol = 0., maxiter = 30_000, sigma = rand() / 1e4)  
     # solve
-    u[internal_dofs] = Uu[:, numeig]
+    u[internal_dofs] = real.(Uu[:, numeig])
     u[meshboundary] .= boundary_vals # set the boundary values
     return K, M, internal_dofs, u, Uu, real.(λ)
 end
