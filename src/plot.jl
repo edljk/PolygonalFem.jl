@@ -56,7 +56,7 @@ function plotsolution3D(uin, pv, cells, bcells, Iv, ps;
                         alphac::Float64 = 0.9, visible::Bool = false,
                         resolution::Int64 = 400, mesh_filename::String = "")
     np, m = length(cells), GeometryBasics.Mesh[] 
-    GLMakie.destroy!(GLMakie.global_gl_screen())
+    GLMakie.destroy!(GLMakie.Screen())
     colS = range(Colors.HSV(0, 1, 1), stop = Colors.HSV(330, 1, 1), 
                  length = 64)
     colmapS = [convert(Colors.RGB{Float32}, colS[k]) for  k = 1:length(colS)] 
@@ -147,7 +147,7 @@ function plotsolution(uin, pv, cells, bcells, Iv, ps;
                        randomcolors = randomcolors)
         return
     end
-    GLMakie.destroy!(GLMakie.global_gl_screen())
+    GLMakie.destroy!(GLMakie.Screen())
     dim = length(uin) ÷ size(pv, 1)
     fig = GLMakie.Figure(resolution = (dim * resolution, resolution)) 
     P = Polygon[]
@@ -194,7 +194,7 @@ function plotsolution(uin, pv, cells, bcells, Iv, ps;
         end
     end
     if dim > 1
-        Main.Makie.linkaxes!(axlist...)
+        Makie.linkaxes!(axlist...)
     end
     display(Makie.current_figure())
     return
