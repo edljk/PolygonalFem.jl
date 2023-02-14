@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/edljk/PolygonalFem.jl.svg?branch=main)](https://travis-ci.com/edljk/PolygonalFem.jl)
 [![Coverage](https://codecov.io/gh/edljk/PolygonalFem.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/edljk/PolygonalFem.jl)
 
-Julia implementation adapted from the articles / matlab's codes `The virtual element method in 50 lines of matlab` and `mVEM: MATLAB Programming for Virtual Element Methods`. See [Oliver J. Sutton article](https://arxiv.org/pdf/1604.06021.pdf) (2D case) and [Terence Yuyue github](https://github.com/Terenceyuyue/mVEM/tree/master/vem3) (3D case).
+Julia implementation adapted from the articles / matlab's codes `The virtual element method in 50 lines of matlab` and `mVEM: MATLAB Programming for Virtual Element Methods`. See [Oliver J. Sutton article](https://arxiv.org/pdf/1604.06021.pdf) (2D case) and [Yue Yu  github](https://github.com/Terenceyuyue/mVEM/tree/master/vem3) (3D case).
 
 ## Install PolygonalFem
 
