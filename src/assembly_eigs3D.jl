@@ -56,11 +56,11 @@ function assembKM_vemKM3D(pv::Matrix{T}, elem, matbbelem, c) where T
         # faces
         elemf, indexFace = matbbelem[iel], elem2face[iel]
         # global index of vertices and local index of elemf
-        Tri, index3, ~, elemfLocal = faceTriangulation(elemf)
+        Tri, indexDof, ~, elemfLocal = faceTriangulation(elemf)
         # centroid and diameter
-        Nv = length(index3)
+        Nv = length(indexDof)
         Ndof = Nv
-        V = @view pv[index3, :]
+        V = @view pv[indexDof, :]
         ndb = 20
         println("^" ^ ndb, " using buggy centroid for debugging! ", "^" ^ ndb)
         xK, yK, zK = buggy_polycentroid3(pv, Tri)
@@ -135,9 +135,10 @@ function assembKM_vemKM3D(pv::Matrix{T}, elem, matbbelem, c) where T
         #AK  = Pis' * G * Pis + cc * Pis' * H * Pis +
         #      hK * (1 + cc * hK ^ 2) * (I - Pi)' * (I - Pi) 
         AK  = Pis' * G * Pis + hK * (I - Pi)' * (I - Pi) 
+        #C = H * (Gs \ Bs)
+        #AM  = C' * (H \ C) + hK ^ 3 * (I - Pi)' * (I - Pi) 
         AM  = Pis' * H * Pis + hK ^ 3 * (I - Pi)' * (I - Pi) 
         # --------- assembly index for ellptic projection -----------
-        indexDof = index3
         ii[(ia + 1):(ia + Ndof ^ 2)] = repeat(indexDof', Ndof, 1)
         jj[(ia + 1):(ia + Ndof ^ 2)] = repeat(indexDof, Ndof)
         SK[(ia + 1):(ia + Ndof ^ 2)] = AK
