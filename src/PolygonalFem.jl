@@ -4,14 +4,16 @@ using LinearAlgebra, StatsBase, SparseArrays, GroupSlices
 using NearestNeighbors, Arpack
 using ReverseDiff, CoordinateTransformations, Interpolations
 using ReverseDiff: GradientTape, GradientConfig, gradient, gradient!, compile
-using FileIO, JLD2, GeometryBasics, Colors, PyCall
+using FileIO, JLD2, GeometryBasics, Colors, PyCall, DelimitedFiles
 
 include("assembly.jl")
 include("assembly_elas.jl")
 include("assembly_eigs.jl")
+include("assembly_eigs3D.jl")
 include("adjoint.jl")
 include("utils.jl")
-if ENV["HOSTNAME"] !== "ubuntuljk" || :GraphicTools ∈ names(Main, all = true, imported = true)
+if ENV["HOSTNAME"] !== "ubuntuljk" || 
+   :GraphicTools ∈ names(Main, all = true, imported = true)
     using  Makie, GLMakie
     include("plot.jl")
 end

@@ -1,149 +1,179 @@
+include("assembly_eigs3D_utils.jl")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------
 """
-   IK, JK, SK, IM, JM, SM = assembKM_vemKM3D(pv, cellsb)
+    assembKM_vemKM3D(pv, elem, matbbelem, c)  → IK, JK, SK, IM, JM, SM 
 
-Assemble stiffness and mass terms of virtual element approach
+Assemble stiffness and mass terms of virtual element approach.
+The code is a julia translation of [Terence Yuyue](https://github.com/Terenceyuyue/mVEM/tree/master/vem3)
+
 """
-function assembKM_vemKM3D(pv, cellsb)
+function assembKM_vemKM3D(pv::Matrix{T}, elem, matbbelem, c) where T
     # type of input (for overloaded differentiation calls)
-    typein = typeof(pv[1])
-    n_dofs, n_polys = size(pv, 1), 3 # method has 1 degree of freedom per vertex
-    # stiffness coefficients and source coefficients   
-    IK, JK = Int64[], Int64[]
-    IM, JM = Int64[], Int64[]
-    SK, SM = if typein == Float64 
-        Float64[], Float64[]
-    else
-        Any[], Any[]
+    nps, typein = length(elem), typeof(pv[1])
+    # compute centroids / diameters
+    ps = zeros(nps)
+    _, centroids, _, diameters = centers_momentum_geogram(ps, pv, elem)
+    # define face and elem2face
+    nbf_by_elem = length.(matbbelem)
+    allfaces, elem2face = Vector{Vector{Int64}}(), Vector{Vector{Int64}}()
+    for k = 1:nps 
+        append!(allfaces, deepcopy(matbbelem[k]))
     end
-    # impose an ordering on the linear polynomials
-    linear_polynomials = [[0,0], [1,0], [0,1]] 
-    H = zeros(typein, 3, 3)
-    # a utility function for wrapping around a vector
-    mod_wrap(x, a) = mod(x - 1, a) + 1 
-    for el_id = 1:length(cellsb)
-        #println(cellsb[el_id])
-        vert_ids = cellsb[el_id]   # IDs of the vertices of this element
-        verts = pv[vert_ids, :]    # coordinates of the vertices of this element
-        n_sides = length(vert_ids) # start computing the geometric information
-        area_components = verts[:, 1] .* [verts[2:end, 2]..., verts[1, 2]] .- 
-                         [verts[2:end, 1]..., verts[1, 1]] .* verts[:, 2]
-        area = 0.5 * abs(sum(area_components))
-        centroid = sum((verts .+ vcat(verts[2:end, :], verts[1, :]')) .* 
-                        repeat(area_components, 1, 2), dims = 1) / (6 * area)
-        diameter = 0 # compute the diameter by looking at every pair of vertices
-        for i = 1:(n_sides - 1)
-            for j = (i + 1):n_sides
-                diameter = max(diameter, norm(verts[i, :] .- verts[j, :]))
-            end
-        end
-        D = zeros(typein, n_sides, n_polys) 
-        D[:, 1] .= 1
-        B = zeros(typein, n_polys, n_sides) 
-        B[1, :] .= 1 / n_sides
-        for vertex_id = 1:n_sides
-            vert = verts[vertex_id, :] # this vertex and its neighbours
-            prev = verts[mod_wrap(vertex_id - 1, n_sides), :]
-            next = verts[mod_wrap(vertex_id + 1, n_sides), :]
-            # average of normals on edges
-            vertex_normal = [next[2] - prev[2], prev[1] - next[1]]
-            # only need to loop over non-constant polynomials
-            for poly_id = 2:n_polys 
-                poly_degree = linear_polynomials[poly_id]
-                # gradient of a linear polynomial is constant
-                monomial_grad = poly_degree / diameter 
-                D[vertex_id, poly_id] = dot(vert .- centroid[:], 
-                                            poly_degree) / diameter
-                B[poly_id, vertex_id] = 0.5 * dot(monomial_grad, vertex_normal)
-            end
-        end
-        # routine to compute H
-        fill!(H, zero(typein))
-        H[1, 1] = area
-        for j = 2:3
-            for k = 2:3
-                for v = 1:n_sides
-                    vert = verts[v, :]
-                    next = verts[mod_wrap(v - 1, n_sides), :]                
-                    H[j, k] +=  _integrate2dtri(centroid, vert, next,
-                      linear_polynomials[j], linear_polynomials[k], diameter, 6)
-                end
-            end
-        end   
-        # compute the local Ritz projector to polynomials
-        projector = (B * D) \ B 
-        stabilising_term = (eye(n_sides) .- D * projector)' * 
-                           (eye(n_sides) .- D * projector)
-        G = B * D 
-        Gt = copy(G)
-        Gt[1, :] .= 0
-        local_stiffness = projector' * Gt * projector + stabilising_term
-        C = H * (G \ B)
-        ritz_projector = D * projector
-        local_mass = C' * (H \ C) + area * (eye(n_sides) - ritz_projector)' *
-                                           (eye(n_sides) - ritz_projector)
-        # copy local to global
-        append!(IK, repeat(vert_ids, length(vert_ids)))
-        append!(JK, repeat(vert_ids', length(vert_ids))[:])
-        append!(SK, local_stiffness[:])
-        append!(IM, repeat(vert_ids, length(vert_ids)))
-        append!(JM, repeat(vert_ids', length(vert_ids))[:])
-        append!(SM, local_mass[:])
+    allfaces_keep = deepcopy(allfaces)
+    sort!.(allfaces)
+    ordered_faces = unique(allfaces)
+    Ioldorder = [findfirst(isequal(ff), allfaces) for ff ∈ ordered_faces]
+    faces = allfaces_keep[Ioldorder, :]
+    If = [findfirst(isequal(allfaces[l]), ordered_faces) 
+                                                    for l = 1:length(allfaces)]
+    ck = 1
+    for k = 1:nps 
+        push!(elem2face, If[ck:(ck + nbf_by_elem[k] - 1)])
+        ck += nbf_by_elem[k]
     end
+    N, NT, NF = size(pv, 1), size(elem, 1), length(faces)
+    # derive elliptic projections of all faces
+    faceProj = Matrix{T}[]
+    for (k, f) ∈ enumerate(faces)
+        # pifs
+        Pifs = faceEllipticProjection(pv[f, :])
+        # sort columns
+        idx = sortperm(f)
+        push!(faceProj, copy(Pifs[:, idx]))
+    end
+    # compute and assemble the linear system
+    Ph = Matrix{T}[] # matrix for error evaluation
+    elem2dof = Vector{Int64}[]
+    elemLen = [length(unique(union(matbbelem[k]...))) for k = 1:nps]
+    nnz = sum(elemLen .^ 2)
+    ii, jj = zeros(Int64, nnz), zeros(Int64, nnz)
+    SK, SM = zeros(T, nnz), zeros(T, nnz)
+    nnz = sum(elemLen)
+    elemb = zeros(Int64, nnz)
+    ia, ib = 0, 0
+    for iel = 1:NT
+        # ------- element information --------
+        # faces
+        elemf, indexFace = matbbelem[iel], elem2face[iel]
+        # global index of vertices and local index of elemf
+        Tri, index3, ~, elemfLocal = faceTriangulation(elemf)
+        # centroid and diameter
+        Nv = length(index3)
+        Ndof = Nv
+        V = @view pv[index3, :]
+        ndb = 20
+        println("^" ^ ndb, " using buggy centroid for debugging! ", "^" ^ ndb)
+        xK, yK, zK = buggy_polycentroid3(pv, Tri)
+        #@show (xK, yK, zK)
+        #xK, yK, zK = centroids[iel, :]
+        #@show (xK, yK, zK)
+        hK = diameters[iel]
+        x = @view V[:, 1]
+        y = @view V[:, 2]
+        z = @view V[:, 3] 
+        # ------- scaled monomials ----------
+        m1(x, y, z) = ones(T, length(x))
+        m2(x, y, z) = (x .- xK) / hK
+        m3(x, y, z) = (y .- yK) / hK
+        m4(x, y, z) = (z .- zK) / hK
+        m(x, y, z) = [m1(x, y, z)[1], m2(x, y, z), m3(x, y, z), m4(x , y, z)]
+        mc = [m1, m2, m3, m4]
+        gradmMat = [0 0 0; 1/hK 0 0; 0 1/hK 0; 0 0 1/hK]
+        #-------- transition matrix ----------
+        D = hcat(m1(x, y, z), m2(x, y, z), m3(x, y, z), m4(x , y, z))
+        # ----------- elliptic projection -------------
+        B = zeros(4, Ndof)
+        #for s = 1:length(elemf)
+        for s = 1:length(elemf)
+            # --- information of current face
+            # vertices of face
+            facesloc = elemf[s]
+            P = @view pv[facesloc, :]
+            # elliptic projection on the face
+            idFace = indexFace[s]   
+            Pifs = faceProj[idFace] # the order may be not correct
+            # strange sorting.. (not understood completely)
+            funik = sort(unique(facesloc))
+            idx = [findfirst(isequal(ff), funik) for ff ∈ facesloc]
+            Pifs = Pifs[:, idx]
+            # normal vector           
+            e1 = P[2, :] - P[1, :]
+            en = P[1, :] - P[end, :]
+            nf = cross(e1, en)
+            nf ./= norm(nf)
+            # area
+            areaf = polyarea(P)
+            # --- integral of Pifs
+            intFace = [areaf 0 0] * Pifs  # local
+            #display(Pifs)
+            intProj = zeros(1 , Ndof)     # global adjustment
+            faceLocal = elemfLocal[s]      
+            intProj[1, faceLocal] .= intFace[:]
+            # add grad(m) * nf
+            Bf = sum(gradmMat .* nf', dims = 2) * intProj
+            #display(intProj)
+            B = B + Bf
+        end
+        # constraint
+        Bs = copy(B)  
+        Bs[1, :] .= 1 / Ndof
+        # consistency relation
+        G = B * D
+        Gs = Bs * D
+        # --------- L2 projection -----------   
+        H = zeros(4, 4)
+        for i = 1:4
+            fun(X) = mc[i](X[1], X[2], X[3])[1] * m(X[1], X[2], X[3])
+            H[i, :] = integralPolyhedron(fun, 3, pv, elemf, centroids[iel, :]) 
+            ## centroids??
+        end
+        # --------- local stiffness matrix ---------
+        Pis = Gs \ Bs  
+        Pi  = D * Pis
+        I = Matrix(LinearAlgebra.I, size(Pi, 1), size(Pi, 2))
+        #cc = 1.
+        #AK  = Pis' * G * Pis + cc * Pis' * H * Pis +
+        #      hK * (1 + cc * hK ^ 2) * (I - Pi)' * (I - Pi) 
+        AK  = Pis' * G * Pis + hK * (I - Pi)' * (I - Pi) 
+        AM  = Pis' * H * Pis + hK ^ 3 * (I - Pi)' * (I - Pi) 
+        # --------- assembly index for ellptic projection -----------
+        indexDof = index3
+        ii[(ia + 1):(ia + Ndof ^ 2)] = repeat(indexDof', Ndof, 1)
+        jj[(ia + 1):(ia + Ndof ^ 2)] = repeat(indexDof, Ndof)
+        SK[(ia + 1):(ia + Ndof ^ 2)] = AK
+        SM[(ia + 1):(ia + Ndof ^ 2)] = AM
+        ia += Ndof ^ 2
+        # --------- matrix for L2 and H1 error evaluation  ---------
+        push!(Ph, copy(Pis))
+        push!(elem2dof, copy(indexDof))
+    end
+    #=
+    # octave comparison
+     S = SK + SM
+    ijs = readdlm("/tmp/kk.mat")[6:end, 1:3]
+    @show norm(ijs[:, 1] - ii)
+    @show norm(ijs[:, 2] - jj)
+    @show norm(ijs[:, 3] - S)
+    =#
+    IK, JK, IM, JM = ii, jj, ii, jj
     return IK, JK, SK, IM, JM, SM
-end
-function _integrate2dtri(P1, P2, P3, α, β, diameter, qrule)
-    V = 0.
-    if qrule == 1
-        centroid = P1
-        tricentroid = 1 / 3 * (P1 + P2 + P3)
-        A = [1 P1...; 1 P2...; 1 P3...]
-        area = 0.5 * abs(det(A))
-        x, y = tricentroid[1], tricentroid[2]   
-        ma = ((x - centroid[1]) / diameter) ^ α[1] *
-             ((y - centroid[2]) / diameter) ^ α[2]
-        mb = ((x - centroid[1]) / diameter) ^ β[1] *
-             ((y - centroid[2]) / diameter) ^ β[2]
-        V = area * ma * mb
-    elseif qrule == 6
-        centroid = P1
-        A = [1 P1...; 1 P2...; 1 P3...]
-        area = 0.5 * abs(det(A))  
-        # 6th order triangular quadrature
-        # obtain Quadrature points and weights    
-        qw = [0.1116907948390, 0.1116907948390, 0.1116907948390, 
-              0.0549758718276, 0.0549758718276, 0.0549758718276]
-        qx = [0.108103018168, 0.445948490915, 0.445948490915, 
-              0.816847572980, 0.091576213509, 0.091576213509]
-        qy = [0.445948490915, 0.445948490915, 0.108103018168, 
-              0.091576213509, 0.091576213509, 0.816847572980]
-        V = 0.
-        for q = 1:qrule
-            xhat = (P2[1] - P1[1]) * qx[q] + (P3[1] - P1[1]) * qy[q] + P1[1]
-            yhat = (P2[2] - P1[2]) * qx[q] + (P3[2] - P1[2]) * qy[q] + P1[2]
-            ma = ((xhat - centroid[1]) / diameter) ^ α[1] *
-                 ((yhat - centroid[2]) / diameter) ^ α[2]
-            mb = ((xhat - centroid[1]) / diameter) ^ β[1] *
-                 ((yhat - centroid[2]) / diameter) ^ β[2]
-            V += qw[q] * 2 * area * ma * mb
-        end
-    end
-    return V
 end
 #-------------------------------------------------------------------------------
 """
-    u, p, t, meshboundary = vem_eigs(filename::String =  "squarepolmesh_coarse",
-                                      nc::Int64 = 1_00; resolution::Int64 = 400)
+    vem_eigs3D(filename::String =  "Lpolmesh_coarse", 
+               nc::Int64 = 1_00; resolution::Int64 = 400)
+               → u, p, t, meshboundary 
 
 N.B. 
 * nc = 100, 1_000 or 10_000
 * adapted code from the iVEM-1.0 Matlab Toolbox
 """
-function vem_eigs(filename::String = "Lpolmesh", nc::Int64 = 1_00;
-                  resolution::Int64 = 400, visible::Bool = false,
-                  numeig::Int64 = 2)
+function vem_eigs3D(filename::String = "Lpolmesh", nc::Int64 = 1_00;
+                    resolution::Int64 = 400, visible::Bool = false,
+                    numeig::Int64 = 2)
     # computes the virtual element solution of the Poisson problem on 
-    # the specified mesh
+    # the specified meshprintln(norm.(centers .- c.centers))
+
     # load the mesh  + pv       : vertices of the cells 
     #                + cells    : polygonal cells (⚠ orientation is crucial)
     #                + (pb, tb) : restricted delaunay mesh 
@@ -184,8 +214,8 @@ function vem_eigs(filename::String = "Lpolmesh", nc::Int64 = 1_00;
     return nothing 
 end
 #-------------------------------------------------------------------------------
-function solve_eigs(IK, JK, SK, IM, JM, SM, pv, meshboundary,
-                    boundary_condition, numeig)
+function solve_eigs3D(IK, JK, SK, IM, JM, SM, pv, meshboundary,
+                      boundary_condition, numeig)
     n_dofs = size(pv, 1)   
     u = zeros(n_dofs) # degrees of freedom of the virtual element solution
     K = sparse(IK, JK, SK, n_dofs, n_dofs) 
@@ -206,6 +236,6 @@ function solve_eigs(IK, JK, SK, IM, JM, SM, pv, meshboundary,
     return K, M, internal_dofs, u, Uu, real.(λ)
 end
 #-------------------------------------------------------------------------------
-function dirichlet(points)
+function dirichlet3D(points)
     return 0.
 end
