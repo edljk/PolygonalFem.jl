@@ -4,7 +4,7 @@ include("assembly_eigs3D_utils.jl")
     assembKM_vemKM3D(pv, elem, matbbelem, c)  → IK, JK, SK, IM, JM, SM 
 
 Assemble stiffness and mass terms of virtual element approach.
-The code is a julia translation of [Terence Yuyue](https://github.com/Terenceyuyue/mVEM/tree/master/vem3)
+The code is a julia translation of [Yu yue](https://github.com/Terenceyuyue/mVEM/tree/master/vem3)
 
 """
 function assembKM_vemKM3D(pv::Matrix{T}, elem, matbbelem, c) where T
@@ -62,10 +62,10 @@ function assembKM_vemKM3D(pv::Matrix{T}, elem, matbbelem, c) where T
         Ndof = Nv
         V = @view pv[indexDof, :]
         ndb = 20
-        println("^" ^ ndb, " using buggy centroid for debugging! ", "^" ^ ndb)
-        xK, yK, zK = buggy_polycentroid3(pv, Tri)
+        #println("^" ^ ndb, " using approx centroid for debugging! ", "^" ^ ndb)
+        #xK, yK, zK = approxpolycentroid3(pv, Tri)
         #@show (xK, yK, zK)
-        #xK, yK, zK = centroids[iel, :]
+        xK, yK, zK = centroids[iel, :]
         #@show (xK, yK, zK)
         hK = diameters[iel]
         x = @view V[:, 1]

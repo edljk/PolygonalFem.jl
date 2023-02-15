@@ -510,8 +510,8 @@ function polyarea(P)
     area = sum(areaTri)
     return area
 end
-########################### BUGGED NOT USED ####################################
-function buggy_polycentroid3(V, Tri)
+########################### APRROXIMATION NOT USED #############################
+function approxpolycentroid3(V, Tri)
     # polycentroid3 returns the x,y,z coordinates of centroid
     # of surface triangulated polyhedron.
     #
